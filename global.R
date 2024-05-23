@@ -33,6 +33,7 @@ shhh(library(bslib))
 shhh(library(dfeshiny))
 shhh(library(ggiraph))
 shhh(library(readxl))
+shhh(library(snakecase))
 # shhh(library(shinya11y))
 
 # Functions --------------------------------------------------------------------
@@ -99,8 +100,69 @@ google_analytics_key <- "Z967JJVQQX"
 
 source("R/read_data.R")
 
-## read in the ready reckoner data from the Excel spreadsheet
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+# ---- read in the ready reckoner data from the Excel spreadsheet ----
+# -----------------------------------------------------------------------------------------------------------------------------
 data <- func_read_multiplesheets("data/2019_l3va_step5_outputs.xlsx")
+
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+# ---- tidy RR data and sort data types ----
+# -----------------------------------------------------------------------------------------------------------------------------
+
+colnames(data$national_bands) <- to_snake_case(colnames(data$national_bands))
+colnames(data$subject_variance) <- to_snake_case(colnames(data$subject_variance))
+colnames(data$qualification_variance) <- to_snake_case(colnames(data$qualification_variance))
+colnames(data$points_lookup) <- to_snake_case(colnames(data$points_lookup))
+colnames(data$subject_chart) <- to_snake_case(colnames(data$subject_chart))
+colnames(data$qualid_lookup) <- to_snake_case(colnames(data$qualid_lookup))
+colnames(data$gnumber_lookup) <- to_snake_case(colnames(data$gnumber_lookup))
+colnames(data$disadvantaged_variance) <- to_snake_case(colnames(data$disadvantaged_variance))
+
+data$national_bands <- data$national_bands %>% mutate(qual_id = as.character(qual_id))
+data$subject_variance <- data$subject_variance %>% mutate(
+  qual_id = as.character(qual_id),
+  qual_co_id = as.character(qual_co_id),
+  sublevno = as.character(sublevno),
+  subject_code = as.character(subj),
+  exam_cohort = as.character(exam_cohort)
+)
+data$qualification_variance <- data$qualification_variance %>% mutate(
+  qual_co_id = as.character(qual_co_id),
+  sublevno = as.character(sublevno)
+)
+data$points_lookup <- data$points_lookup %>% mutate(qualification_code = as.character(qualification_code))
+data$subject_chart <- data$subject_chart %>% mutate(
+  qual_id = as.character(qual_id),
+  exam_cohort = as.character(exam_cohort),
+  sublevno = as.character(sublevno),
+  subject_code = as.character(subj)
+)
+data$qualid_lookup <- data$qualid_lookup %>% mutate(
+  qual_id = as.character(whole_qual_id),
+  qualification_code = as.character(qualification_code),
+  subject_code = as.character(subject_code)
+)
+data$gnumber_lookup <- data$gnumber_lookup %>% mutate(
+  qual_id = as.character(qualification_id),
+  qualification_number = as.character(qualification_number),
+  qualification_code = as.character(qualification_code),
+  subject_code = as.character(subject_code)
+)
+data$disadvantaged_variance <- data$disadvantaged_variance %>% mutate(
+  qual_id = as.character(qual_id),
+  exam_cohort = as.character(exam_cohort),
+  sublevno = as.character(sublevno)
+)
+
+
+
+
+
+
 
 
 

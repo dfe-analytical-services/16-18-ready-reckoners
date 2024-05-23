@@ -31,7 +31,129 @@ data_upload_panel <- function() {
   )
 }
 
+national_chart_panel <- function() {
+  tabPanel(
+    value = "dashboard",
+    "National Comparison",
+    gov_main_layout(
+      gov_row(
+        column(
+          width = 12,
+          h1("2019 Ready Reckoner: National subject level comparison"),
+          br(),
+          br(),
+        ),
+        column(
+          width = 12,
+          div(
+            class = "well",
+            style = "min-height: 100%; height: 100%; overflow-y: visible",
+            gov_row(
+              # column(
+              #   width = 6,
+              #   selectizeInput(
+              #     inputId = "ReportYr_select",
+              #     label = "1. Select a report year",
+              #     choices = unique(qual_lookup$ReportYr), # list(ReportYr = sort(unique(qual_lookup$ReportYr))),
+              #     selected = max(qual_lookup$ReportYr)
+              #   )
+              # ),
+              column(
+                width = 6,
+                selectizeInput(
+                  inputId = "dropdown_qualifications",
+                  label = "Select a qualification",
+                  choices = unique(data$qualid_lookup$qualification_name),
+                  selected = "GCE A level"
+                )
+              ),
+              column(
+                width = 6,
+                selectizeInput(
+                  inputId = "dropdown_subjects",
+                  label = "Select a subject",
+                  choices = unique(data$qualid_lookup$subject_name),
+                  selected = "Mathematics"
+                )
+              ) # ,
+              #
+              #       column(
+              #         width = 6,
+              #         selectizeInput(
+              #           inputId = "size_select",
+              #           label = "4. Select a size",
+              #           choices = list(Sizes = sort(qual_lookup$SIZE))
+              #         )
+              #       ),
+              #
+              #       column(
+              #         width = 6,
+              #         selectizeInput(
+              #           inputId = "grade_structure_select",
+              #           label = "5. Select a grade structure",
+              #           choices = list(GradeStructures = sort(qual_lookup$gradeStructure))
+              #         )
+              #       ),
+              #     )
+              #   )
+              # ),
+              #
+              #
+              #
+              #
+              # column(
+              #   width=12,
+              #   gov_row(
+              #     column(
+              #       width = 12,
+              #       br(),
+              #       br(),
+              #       htmlOutput("tm_title"),
+              #       DT::dataTableOutput("tm_table") %>% withSpinner(color="#1d70b8")
+              #     )
+              #   )
+              # )#,
 
+
+              # column(
+              #   width=12,
+              #   div(
+              #     class = "well",
+              #     style = "min-height: 100%; height: 100%; overflow-y: visible",
+              #     gov_row(
+              #       column(
+              #         width = 12,
+              #         paste("Download the underlying data for this dashboard:"), br(),
+              #         downloadButton(
+              #           outputId = "tm_data_download_numbers",
+              #           label= "Download (all student numbers data)",
+              #           icon = shiny::icon("download"),
+              #           class = "downloadButton"
+              #         ),
+              #         br(),
+              #         br()
+              #       ),
+              #
+              #       column(
+              #         width = 12,
+              #         downloadButton(
+              #           outputId = "tm_data_download_percentage",
+              #           label= "Download (all student percentage data)",
+              #           icon = shiny::icon("download"),
+              #           class = "downloadButton"
+              #         )
+              #       )
+              #
+              #     )
+              #   )
+              # )
+            )
+          )
+        )
+      )
+    )
+  )
+}
 
 
 

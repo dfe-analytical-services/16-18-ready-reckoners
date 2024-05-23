@@ -130,7 +130,8 @@ ui <- function(input, output, session) {
       id = "navlistPanel",
       widths = c(2, 8),
       well = FALSE,
-      data_upload_panel()
+      data_upload_panel(),
+      national_chart_panel()
       # dashboard_panel(),
       # homepage_panel(),
       # a11y_panel(),

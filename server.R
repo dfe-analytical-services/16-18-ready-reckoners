@@ -173,9 +173,11 @@ server <- function(input, output, session) {
 
   #  output$cookie_status <- renderText(as.character(input$cookies))
 
-  # Simple server stuff goes here ----------------------------------------------
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- User data upload ----
+  # -----------------------------------------------------------------------------------------------------------------------------
 
-  data <- reactive({
+  user_data <- reactive({
     req(input$upload)
 
     # 1. validation test 1: check file extension
@@ -213,18 +215,10 @@ server <- function(input, output, session) {
     return(pupil_data)
   })
 
-  # 1. preview pupil data with the option for the user to specify number of rows
-  # output$input_preview <- renderTable(
-  #   head(data(), input$n),
-  #   options = list(
-  #     scrollX = TRUE,
-  #     scrollY = "250px")
-  #   )
-
 
   output$input_preview <- renderDataTable({
     datatable(
-      head(data(), input$n),
+      head(user_data(), input$n),
       options = list(
         scrollX = TRUE,
         scrollY = "250px",
@@ -234,6 +228,43 @@ server <- function(input, output, session) {
       )
     )
   })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- Dropdown boxes ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+
+  observe({
+    updateSelectInput(session,
+      inputId = "dropdown_qualifications",
+      label = NULL,
+      choices <- user_data() %>%
+        select(qualification_code) %>%
+        distinct() %>%
+        left_join(data$qualid_lookup, by = "qualification_code") %>%
+        select(qualification_name)
+      # sort(.)
+    )
+  })
+
+  observe({
+    updateSelectInput(session,
+      inputId = "dropdown_subjects",
+      label = NULL,
+      choices <- user_data() %>%
+        select(qualification_code, subject_code) %>%
+        distinct() %>%
+        left_join(data$qualid_lookup, by = c("qualification_code", "subject_code")) %>%
+        filter(qualification_name == input$dropdown_qualifications) %>%
+        pull(subject_name) %>%
+        sort(.)
+    )
+  })
+
+
+
+
 
 
 

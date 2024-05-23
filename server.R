@@ -193,7 +193,7 @@ server <- function(input, output, session) {
     # 3. validation test 2: check column names
     expected_column_names <- c(
       "forename", "surname", "gender", "qualification_code", "qualification_name", "subject_code",
-      "subject_name", "size", "cohort", "prior_attainment", "estimated_points", "actual_points",
+      "subject_name", "size", "cohort_name", "prior_attainment", "estimated_points", "actual_points",
       "value_added_score", "qual_id", "disadvantaged_status", "forvus_id", "laestab"
     )
     actual_column_names <- colnames(pupil_data)
@@ -234,17 +234,31 @@ server <- function(input, output, session) {
   # ---- Dropdown boxes ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
+  observe({
+    updateSelectInput(session,
+      inputId = "dropdown_cohort",
+      label = NULL,
+      choices <- user_data() %>%
+        select(cohort_name) %>%
+        distinct() %>%
+        left_join(data$qualid_lookup, by = "cohort_name") %>%
+        pull(cohort_name) %>%
+        sort(.)
+    )
+  })
+
 
   observe({
     updateSelectInput(session,
       inputId = "dropdown_qualifications",
       label = NULL,
       choices <- user_data() %>%
-        select(qualification_code) %>%
+        select(cohort_name, qualification_code) %>%
         distinct() %>%
-        left_join(data$qualid_lookup, by = "qualification_code") %>%
-        select(qualification_name)
-      # sort(.)
+        left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code")) %>%
+        filter(cohort_name == input$dropdown_cohort) %>%
+        pull(qualification_name) %>%
+        sort(.)
     )
   })
 
@@ -253,15 +267,35 @@ server <- function(input, output, session) {
       inputId = "dropdown_subjects",
       label = NULL,
       choices <- user_data() %>%
-        select(qualification_code, subject_code) %>%
+        select(cohort_name, qualification_code, subject_code) %>%
         distinct() %>%
-        left_join(data$qualid_lookup, by = c("qualification_code", "subject_code")) %>%
-        filter(qualification_name == input$dropdown_qualifications) %>%
+        left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code", "subject_code")) %>%
+        filter(
+          cohort_name == input$dropdown_cohort,
+          qualification_name == input$dropdown_qualifications
+        ) %>%
         pull(subject_name) %>%
         sort(.)
     )
   })
 
+  observe({
+    updateSelectInput(session,
+      inputId = "dropdown_sizes",
+      label = NULL,
+      choices <- user_data() %>%
+        select(cohort_name, qualification_code, subject_code, size) %>%
+        distinct() %>%
+        left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code", "subject_code", "size")) %>%
+        filter(
+          cohort_name == input$dropdown_cohort,
+          qualification_name == input$dropdown_qualifications,
+          subject_name == input$dropdown_subjects
+        ) %>%
+        pull(size) %>%
+        sort(.)
+    )
+  })
 
 
 

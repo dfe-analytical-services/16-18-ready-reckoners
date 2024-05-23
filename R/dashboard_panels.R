@@ -61,6 +61,15 @@ national_chart_panel <- function() {
               column(
                 width = 6,
                 selectizeInput(
+                  inputId = "dropdown_cohort",
+                  label = "Select an exam cohort",
+                  choices = unique(data$qualid_lookup$cohort_name),
+                  selected = "A level"
+                )
+              ),
+              column(
+                width = 6,
+                selectizeInput(
                   inputId = "dropdown_qualifications",
                   label = "Select a qualification",
                   choices = unique(data$qualid_lookup$qualification_name),
@@ -75,16 +84,15 @@ national_chart_panel <- function() {
                   choices = unique(data$qualid_lookup$subject_name),
                   selected = "Mathematics"
                 )
+              ),
+              column(
+                width = 6,
+                selectizeInput(
+                  inputId = "dropdown_sizes",
+                  label = "Select a size",
+                  choices = unique(data$qualid_lookup$size)
+                )
               ) # ,
-              #
-              #       column(
-              #         width = 6,
-              #         selectizeInput(
-              #           inputId = "size_select",
-              #           label = "4. Select a size",
-              #           choices = list(Sizes = sort(qual_lookup$SIZE))
-              #         )
-              #       ),
               #
               #       column(
               #         width = 6,

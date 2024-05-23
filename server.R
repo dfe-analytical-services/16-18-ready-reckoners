@@ -178,23 +178,62 @@ server <- function(input, output, session) {
   data <- reactive({
     req(input$upload)
 
-    # get the file extension for uploaded file
+    # 1. validation test 1: check file extension
     ext <- tools::file_ext(input$upload$name)
-    # check the file extension is csv
-    # if it is a csv, read the data in
-    # if not, display the error message
-    switch(ext,
-      csv = vroom::vroom(input$upload$datapath, delim = ","),
-      validate("Invalid file; Please upload a .csv file")
+
+    validate(
+      need(ext == "csv", "Invalid file type; Please use the template .csv file")
+    )
+
+    # 2. if validation test 1 passes, upload the data ready for column name checking
+    pupil_data <- vroom::vroom(input$upload$datapath, delim = ",")
+
+    # 3. validation test 2: check column names
+    expected_column_names <- c(
+      "forename", "surname", "gender", "qualification_code", "qualification_name", "subject_code",
+      "subject_name", "size", "cohort", "prior_attainment", "estimated_points", "actual_points",
+      "value_added_score", "qual_id", "disadvantaged_status", "forvus_id", "laestab"
+    )
+    actual_column_names <- colnames(pupil_data)
+
+    validate(
+      need(identical(expected_column_names, actual_column_names), "Invalid column name detected or column missing; Please use the template to upload pupil data")
+    )
+
+    # 4. if validation test 2 fails the code will exit, but if it passes the code will continue to return the pupil data
+    pupil_data <- pupil_data %>% mutate(
+      qualification_code = as.character(qualification_code),
+      subject_code = as.character(subject_code),
+      qual_id = as.character(qual_id),
+      disadvantaged_status = as.integer(disadvantaged_status),
+      forvus_id = as.character(forvus_id),
+      laestab = as.character(laestab)
+    )
+
+    return(pupil_data)
+  })
+
+  # 1. preview pupil data with the option for the user to specify number of rows
+  # output$input_preview <- renderTable(
+  #   head(data(), input$n),
+  #   options = list(
+  #     scrollX = TRUE,
+  #     scrollY = "250px")
+  #   )
+
+
+  output$input_preview <- renderDataTable({
+    datatable(
+      head(data(), input$n),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE
+      )
     )
   })
-
-  output$input_preview <- renderTable({
-    head(data(), input$n)
-  })
-
-
-
 
 
 

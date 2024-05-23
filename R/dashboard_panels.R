@@ -23,7 +23,8 @@ data_upload_panel <- function() {
           p("Please upload a .csv file containing the pupil level data for use in the 2019 Ready Reckoner"),
           fileInput("upload", NULL, buttonLabel = "Browse", accept = c(".csv")),
           numericInput("n", "Number of rows to preview", value = 5, min = 1, step = 1),
-          tableOutput("input_preview")
+          DTOutput("input_preview")
+          # tableOutput("input_preview")
         )
       )
     )

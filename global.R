@@ -42,8 +42,15 @@ enableBookmarking("url")
 
 
 
-# func_read_multiplesheets -----------------------------------------------------------------------
-# function to read in a workbook with multiple sheets
+# Rounding -------------------------------------
+round2 <- function(x, n) {
+  posneg <- sign(x)
+  z <- abs(x) * 10^n
+  z <- z + 0.5 + sqrt(.Machine$double.eps)
+  z <- trunc(z)
+  z <- z / 10^n
+  z * posneg
+}
 
 
 

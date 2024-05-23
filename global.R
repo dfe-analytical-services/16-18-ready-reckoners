@@ -32,24 +32,23 @@ shhh(library(rstudioapi))
 shhh(library(bslib))
 shhh(library(dfeshiny))
 shhh(library(ggiraph))
+shhh(library(readxl))
 # shhh(library(shinya11y))
 
 # Functions --------------------------------------------------------------------
 
-# Here's an example function for simplifying the code needed to commas separate
-# numbers:
-
 # This line enables bookmarking such that input choices are shown in the url.
 enableBookmarking("url")
 
-# cs_num -----------------------------------------------------------------------
-# Comma separating function
+
+
+# func_read_multiplesheets -----------------------------------------------------------------------
+# function to read in a workbook with multiple sheets
 
 
 
-cs_num <- function(value) {
-  format(value, big.mark = ",", trim = TRUE)
-}
+
+
 
 # Source scripts ---------------------------------------------------------------
 
@@ -93,35 +92,40 @@ google_analytics_key <- "Z967JJVQQX"
 
 source("R/read_data.R")
 
+## read in the ready reckoner data from the Excel spreadsheet
+data <- func_read_multiplesheets("data/2019_l3va_step5_outputs.xlsx")
+
+
+
 # Read in the data
-dfRevBal <- read_revenue_data()
-# Get geographical levels from data
-dfAreas <- dfRevBal %>%
-  select(
-    geographic_level, country_name, country_code,
-    region_name, region_code,
-    la_name, old_la_code, new_la_code
-  ) %>%
-  distinct()
-
-choicesLAs <- dfAreas %>%
-  filter(geographic_level == "Local authority") %>%
-  select(geographic_level, area_name = la_name) %>%
-  arrange(area_name)
-
-choicesAreas <- dfAreas %>%
-  filter(geographic_level == "National") %>%
-  select(geographic_level, area_name = country_name) %>%
-  rbind(
-    dfAreas %>%
-      filter(geographic_level == "Regional") %>%
-      select(geographic_level, area_name = region_name)
-  ) %>%
-  rbind(choicesLAs)
-
-choicesYears <- unique(dfRevBal$time_period)
-
-choicesPhase <- unique(dfRevBal$school_phase)
+# dfRevBal <- read_revenue_data()
+# # Get geographical levels from data
+# dfAreas <- dfRevBal %>%
+#   select(
+#     geographic_level, country_name, country_code,
+#     region_name, region_code,
+#     la_name, old_la_code, new_la_code
+#   ) %>%
+#   distinct()
+#
+# choicesLAs <- dfAreas %>%
+#   filter(geographic_level == "Local authority") %>%
+#   select(geographic_level, area_name = la_name) %>%
+#   arrange(area_name)
+#
+# choicesAreas <- dfAreas %>%
+#   filter(geographic_level == "National") %>%
+#   select(geographic_level, area_name = country_name) %>%
+#   rbind(
+#     dfAreas %>%
+#       filter(geographic_level == "Regional") %>%
+#       select(geographic_level, area_name = region_name)
+#   ) %>%
+#   rbind(choicesLAs)
+#
+# choicesYears <- unique(dfRevBal$time_period)
+#
+# choicesPhase <- unique(dfRevBal$school_phase)
 
 expandable <- function(inputId, label, contents) {
   govDetails <- shiny::tags$details(

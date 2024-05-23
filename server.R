@@ -174,252 +174,277 @@ server <- function(input, output, session) {
   #  output$cookie_status <- renderText(as.character(input$cookies))
 
   # Simple server stuff goes here ----------------------------------------------
-  reactiveRevBal <- reactive({
-    dfRevBal %>% filter(
-      area_name == input$selectArea | area_name == "England",
-      school_phase == input$selectPhase
+
+  data <- reactive({
+    req(input$upload)
+
+    # get the file extension for uploaded file
+    ext <- tools::file_ext(input$upload$name)
+    # check the file extension is csv
+    # if it is a csv, read the data in
+    # if not, display the error message
+    switch(ext,
+      csv = vroom::vroom(input$upload$datapath, delim = ","),
+      validate("Invalid file; Please upload a .csv file")
     )
   })
 
-  # Define server logic required to draw a histogram
-  output$lineRevBal <- snapshotPreprocessOutput(
-    renderGirafe({
-      girafe(
-        ggobj = createAvgRevTimeSeries(reactiveRevBal(), input$selectArea),
-        options = list(opts_sizing(rescale = TRUE, width = 1.0)),
-        width_svg = 9.6,
-        height_svg = 5.0
-      )
-    }),
-    function(value) {
-      # Removing elements that cause issues with shinytest comparisons when run
-      # on different environments
-      svg_removed <- gsub(
-        "svg_[0-9a-z]{8}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{12}",
-        "svg_random_giraph_string", value
-      )
-      font_standardised <- gsub("Arial", "Helvetica", svg_removed)
-      cleaned_positions <- gsub(
-        "[a-z]*x[0-9]*='[0-9.]*' [a-z]*y[0-9]*='[0-9.]*'",
-        "Position", font_standardised
-      )
-      cleaned_size <- gsub(
-        "width='[0-9.]*' height='[0-9.]*'", "Size", cleaned_positions
-      )
-      cleaned_points <- gsub("points='[0-9., ]*'", "points", cleaned_size)
-      cleaned_points
-    }
-  )
-
-  reactiveBenchmark <- reactive({
-    dfRevBal %>%
-      filter(
-        area_name %in% c(input$selectArea, input$selectBenchLAs),
-        school_phase == input$selectPhase,
-        year == max(year)
-      )
-  })
-
-  output$colBenchmark <- snapshotPreprocessOutput(
-    renderGirafe({
-      girafe(
-        ggobj = plotAvgRevBenchmark(reactiveBenchmark()),
-        options = list(opts_sizing(rescale = TRUE, width = 1.0)),
-        width_svg = 5.0,
-        height_svg = 5.0
-      )
-    }),
-    function(value) {
-      # Removing elements that cause issues with shinytest comparisons when run on
-      # different environments - should add to dfeshiny at some point.
-      svg_removed <- gsub(
-        "svg_[0-9a-z]{8}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{12}",
-        "svg_random_giraph_string",
-        value
-      )
-      font_standardised <- gsub("Arial", "Helvetica", svg_removed)
-      cleaned_positions <- gsub(
-        "x[0-9]*='[0-9.]*' y[0-9]*='[0-9.]*'",
-        "Position", font_standardised
-      )
-      cleaned_size <- gsub(
-        "width='[0-9.]*' height='[0-9.]*'",
-        "Size", cleaned_positions
-      )
-      cleaned_points <- gsub("points='[0-9., ]*'", "points", cleaned_size)
-      cleaned_points
-    }
-  )
-
-  output$tabBenchmark <- renderDataTable({
-    datatable(
-      reactiveBenchmark() %>%
-        select(
-          Area = area_name,
-          `Average Revenue Balance (£)` = average_revenue_balance,
-          `Total Revenue Balance (£m)` = total_revenue_balance_million
-        ),
-      options = list(
-        scrollX = TRUE,
-        paging = FALSE
-      )
-    )
-  })
-
-  # Define server logic to create a box
-
-  output$boxavgRevBal <- renderValueBox({
-    # Put value into box to plug into app
-    valueBox(
-      # take input number
-      paste0("£", format(
-        (reactiveRevBal() %>% filter(
-          year == max(year),
-          area_name == input$selectArea,
-          school_phase == input$selectPhase
-        ))$average_revenue_balance,
-        big.mark = ","
-      )),
-      # add subtitle to explain what it's hsowing
-      paste0("This is the latest value for the selected inputs"),
-      color = "blue"
-    )
-  })
-
-  output$boxpcRevBal <- renderValueBox({
-    latest <- (reactiveRevBal() %>% filter(
-      year == max(year),
-      area_name == input$selectArea,
-      school_phase == input$selectPhase
-    ))$average_revenue_balance
-    penult <- (reactiveRevBal() %>% filter(
-      year == max(year) - 1,
-      area_name == input$selectArea,
-      school_phase == input$selectPhase
-    ))$average_revenue_balance
-
-    # Put value into box to plug into app
-    valueBox(
-      # take input number
-      paste0("£", format(latest - penult,
-        big.mark = ","
-      )),
-      # add subtitle to explain what it's hsowing
-      paste0("This is the change on previous year"),
-      color = "blue"
-    )
-  })
-
-  output$boxavgRevBal_small <- renderValueBox({
-    # Put value into box to plug into app
-    valueBox(
-      # take input number
-      paste0("£", format(
-        (reactiveRevBal() %>% filter(
-          year == max(year),
-          area_name == input$selectArea,
-          school_phase == input$selectPhase
-        ))$average_revenue_balance,
-        big.mark = ","
-      )),
-      # add subtitle to explain what it's hsowing
-      paste0("This is the latest value for the selected inputs"),
-      color = "orange",
-      fontsize = "small"
-    )
-  })
-
-  output$boxpcRevBal_small <- renderValueBox({
-    latest <- (reactiveRevBal() %>% filter(
-      year == max(year),
-      area_name == input$selectArea,
-      school_phase == input$selectPhase
-    ))$average_revenue_balance
-    penult <- (reactiveRevBal() %>% filter(
-      year == max(year) - 1,
-      area_name == input$selectArea,
-      school_phase == input$selectPhase
-    ))$average_revenue_balance
-
-    # Put value into box to plug into app
-    valueBox(
-      # take input number
-      paste0("£", format(latest - penult,
-        big.mark = ","
-      )),
-      # add subtitle to explain what it's hsowing
-      paste0("This is the change on previous year"),
-      color = "orange",
-      fontsize = "small"
-    )
-  })
-
-  output$boxavgRevBal_large <- renderValueBox({
-    # Put value into box to plug into app
-    valueBox(
-      # take input number
-      paste0("£", format(
-        (reactiveRevBal() %>% filter(
-          year == max(year),
-          area_name == input$selectArea,
-          school_phase == input$selectPhase
-        ))$average_revenue_balance,
-        big.mark = ","
-      )),
-      # add subtitle to explain what it's hsowing
-      paste0("This is the latest value for the selected inputs"),
-      color = "green",
-      fontsize = "large"
-    )
-  })
-
-  output$boxpcRevBal_large <- renderValueBox({
-    latest <- (reactiveRevBal() %>% filter(
-      year == max(year),
-      area_name == input$selectArea,
-      school_phase == input$selectPhase
-    ))$average_revenue_balance
-    penult <- (reactiveRevBal() %>% filter(
-      year == max(year) - 1,
-      area_name == input$selectArea,
-      school_phase == input$selectPhase
-    ))$average_revenue_balance
-
-    # Put value into box to plug into app
-    valueBox(
-      # take input number
-      paste0("£", format(latest - penult,
-        big.mark = ","
-      )),
-      # add subtitle to explain what it's hsowing
-      paste0("This is the change on previous year"),
-      color = "green",
-      fontsize = "large"
-    )
-  })
-
-  observeEvent(input$go, {
-    toggle(id = "div_a", anim = T)
+  output$input_preview <- renderTable({
+    head(data(), input$n)
   })
 
 
-  observeEvent(input$link_to_app_content_tab, {
-    updateTabsetPanel(session, "navlistPanel", selected = "dashboard")
-  })
 
-  # Download the underlying data button
-  output$download_data <- downloadHandler(
-    filename = "shiny_template_underlying_data.csv",
-    content = function(file) {
-      write.csv(dfRevBal, file)
-    }
-  )
 
-  # Add input IDs here that are within the relevant drop down boxes to create
-  # dynamic text
-  output$dropdown_label <- renderText({
-    paste0("Current selections: ", input$selectPhase, ", ", input$selectArea)
-  })
+
+
+
+  # reactiveRevBal <- reactive({
+  #   dfRevBal %>% filter(
+  #     area_name == input$selectArea | area_name == "England",
+  #     school_phase == input$selectPhase
+  #   )
+  # })
+  #
+  # # Define server logic required to draw a histogram
+  # output$lineRevBal <- snapshotPreprocessOutput(
+  #   renderGirafe({
+  #     girafe(
+  #       ggobj = createAvgRevTimeSeries(reactiveRevBal(), input$selectArea),
+  #       options = list(opts_sizing(rescale = TRUE, width = 1.0)),
+  #       width_svg = 9.6,
+  #       height_svg = 5.0
+  #     )
+  #   }),
+  #   function(value) {
+  #     # Removing elements that cause issues with shinytest comparisons when run
+  #     # on different environments
+  #     svg_removed <- gsub(
+  #       "svg_[0-9a-z]{8}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{12}",
+  #       "svg_random_giraph_string", value
+  #     )
+  #     font_standardised <- gsub("Arial", "Helvetica", svg_removed)
+  #     cleaned_positions <- gsub(
+  #       "[a-z]*x[0-9]*='[0-9.]*' [a-z]*y[0-9]*='[0-9.]*'",
+  #       "Position", font_standardised
+  #     )
+  #     cleaned_size <- gsub(
+  #       "width='[0-9.]*' height='[0-9.]*'", "Size", cleaned_positions
+  #     )
+  #     cleaned_points <- gsub("points='[0-9., ]*'", "points", cleaned_size)
+  #     cleaned_points
+  #   }
+  # )
+  #
+  # reactiveBenchmark <- reactive({
+  #   dfRevBal %>%
+  #     filter(
+  #       area_name %in% c(input$selectArea, input$selectBenchLAs),
+  #       school_phase == input$selectPhase,
+  #       year == max(year)
+  #     )
+  # })
+  #
+  # output$colBenchmark <- snapshotPreprocessOutput(
+  #   renderGirafe({
+  #     girafe(
+  #       ggobj = plotAvgRevBenchmark(reactiveBenchmark()),
+  #       options = list(opts_sizing(rescale = TRUE, width = 1.0)),
+  #       width_svg = 5.0,
+  #       height_svg = 5.0
+  #     )
+  #   }),
+  #   function(value) {
+  #     # Removing elements that cause issues with shinytest comparisons when run on
+  #     # different environments - should add to dfeshiny at some point.
+  #     svg_removed <- gsub(
+  #       "svg_[0-9a-z]{8}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{12}",
+  #       "svg_random_giraph_string",
+  #       value
+  #     )
+  #     font_standardised <- gsub("Arial", "Helvetica", svg_removed)
+  #     cleaned_positions <- gsub(
+  #       "x[0-9]*='[0-9.]*' y[0-9]*='[0-9.]*'",
+  #       "Position", font_standardised
+  #     )
+  #     cleaned_size <- gsub(
+  #       "width='[0-9.]*' height='[0-9.]*'",
+  #       "Size", cleaned_positions
+  #     )
+  #     cleaned_points <- gsub("points='[0-9., ]*'", "points", cleaned_size)
+  #     cleaned_points
+  #   }
+  # )
+  #
+  # output$tabBenchmark <- renderDataTable({
+  #   datatable(
+  #     reactiveBenchmark() %>%
+  #       select(
+  #         Area = area_name,
+  #         `Average Revenue Balance (£)` = average_revenue_balance,
+  #         `Total Revenue Balance (£m)` = total_revenue_balance_million
+  #       ),
+  #     options = list(
+  #       scrollX = TRUE,
+  #       paging = FALSE
+  #     )
+  #   )
+  # })
+  #
+  # # Define server logic to create a box
+  #
+  # output$boxavgRevBal <- renderValueBox({
+  #   # Put value into box to plug into app
+  #   valueBox(
+  #     # take input number
+  #     paste0("£", format(
+  #       (reactiveRevBal() %>% filter(
+  #         year == max(year),
+  #         area_name == input$selectArea,
+  #         school_phase == input$selectPhase
+  #       ))$average_revenue_balance,
+  #       big.mark = ","
+  #     )),
+  #     # add subtitle to explain what it's hsowing
+  #     paste0("This is the latest value for the selected inputs"),
+  #     color = "blue"
+  #   )
+  # })
+  #
+  # output$boxpcRevBal <- renderValueBox({
+  #   latest <- (reactiveRevBal() %>% filter(
+  #     year == max(year),
+  #     area_name == input$selectArea,
+  #     school_phase == input$selectPhase
+  #   ))$average_revenue_balance
+  #   penult <- (reactiveRevBal() %>% filter(
+  #     year == max(year) - 1,
+  #     area_name == input$selectArea,
+  #     school_phase == input$selectPhase
+  #   ))$average_revenue_balance
+  #
+  #   # Put value into box to plug into app
+  #   valueBox(
+  #     # take input number
+  #     paste0("£", format(latest - penult,
+  #       big.mark = ","
+  #     )),
+  #     # add subtitle to explain what it's hsowing
+  #     paste0("This is the change on previous year"),
+  #     color = "blue"
+  #   )
+  # })
+  #
+  # output$boxavgRevBal_small <- renderValueBox({
+  #   # Put value into box to plug into app
+  #   valueBox(
+  #     # take input number
+  #     paste0("£", format(
+  #       (reactiveRevBal() %>% filter(
+  #         year == max(year),
+  #         area_name == input$selectArea,
+  #         school_phase == input$selectPhase
+  #       ))$average_revenue_balance,
+  #       big.mark = ","
+  #     )),
+  #     # add subtitle to explain what it's hsowing
+  #     paste0("This is the latest value for the selected inputs"),
+  #     color = "orange",
+  #     fontsize = "small"
+  #   )
+  # })
+  #
+  # output$boxpcRevBal_small <- renderValueBox({
+  #   latest <- (reactiveRevBal() %>% filter(
+  #     year == max(year),
+  #     area_name == input$selectArea,
+  #     school_phase == input$selectPhase
+  #   ))$average_revenue_balance
+  #   penult <- (reactiveRevBal() %>% filter(
+  #     year == max(year) - 1,
+  #     area_name == input$selectArea,
+  #     school_phase == input$selectPhase
+  #   ))$average_revenue_balance
+  #
+  #   # Put value into box to plug into app
+  #   valueBox(
+  #     # take input number
+  #     paste0("£", format(latest - penult,
+  #       big.mark = ","
+  #     )),
+  #     # add subtitle to explain what it's hsowing
+  #     paste0("This is the change on previous year"),
+  #     color = "orange",
+  #     fontsize = "small"
+  #   )
+  # })
+  #
+  # output$boxavgRevBal_large <- renderValueBox({
+  #   # Put value into box to plug into app
+  #   valueBox(
+  #     # take input number
+  #     paste0("£", format(
+  #       (reactiveRevBal() %>% filter(
+  #         year == max(year),
+  #         area_name == input$selectArea,
+  #         school_phase == input$selectPhase
+  #       ))$average_revenue_balance,
+  #       big.mark = ","
+  #     )),
+  #     # add subtitle to explain what it's hsowing
+  #     paste0("This is the latest value for the selected inputs"),
+  #     color = "green",
+  #     fontsize = "large"
+  #   )
+  # })
+  #
+  # output$boxpcRevBal_large <- renderValueBox({
+  #   latest <- (reactiveRevBal() %>% filter(
+  #     year == max(year),
+  #     area_name == input$selectArea,
+  #     school_phase == input$selectPhase
+  #   ))$average_revenue_balance
+  #   penult <- (reactiveRevBal() %>% filter(
+  #     year == max(year) - 1,
+  #     area_name == input$selectArea,
+  #     school_phase == input$selectPhase
+  #   ))$average_revenue_balance
+  #
+  #   # Put value into box to plug into app
+  #   valueBox(
+  #     # take input number
+  #     paste0("£", format(latest - penult,
+  #       big.mark = ","
+  #     )),
+  #     # add subtitle to explain what it's hsowing
+  #     paste0("This is the change on previous year"),
+  #     color = "green",
+  #     fontsize = "large"
+  #   )
+  # })
+  #
+  # observeEvent(input$go, {
+  #   toggle(id = "div_a", anim = T)
+  # })
+  #
+  #
+  # observeEvent(input$link_to_app_content_tab, {
+  #   updateTabsetPanel(session, "navlistPanel", selected = "dashboard")
+  # })
+  #
+  # # Download the underlying data button
+  # output$download_data <- downloadHandler(
+  #   filename = "shiny_template_underlying_data.csv",
+  #   content = function(file) {
+  #     write.csv(dfRevBal, file)
+  #   }
+  # )
+  #
+  # # Add input IDs here that are within the relevant drop down boxes to create
+  # # dynamic text
+  # output$dropdown_label <- renderText({
+  #   paste0("Current selections: ", input$selectPhase, ", ", input$selectArea)
+  # })
 
 
   # Stop app -------------------------------------------------------------------

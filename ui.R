@@ -130,14 +130,15 @@ ui <- function(input, output, session) {
       id = "navlistPanel",
       widths = c(2, 8),
       well = FALSE,
-      dashboard_panel(),
-      homepage_panel(),
-      a11y_panel(),
-      support_panel(
-        team_email = "statistics.development@education.gov.uk",
-        repo_name = "https://github.com/dfe-analytical-services/shiny-template",
-        form_url = "https://forms.office.com"
-      )
+      data_upload_panel()
+      # dashboard_panel(),
+      # homepage_panel(),
+      # a11y_panel(),
+      # support_panel(
+      #   team_email = "statistics.development@education.gov.uk",
+      #   repo_name = "https://github.com/dfe-analytical-services/shiny-template",
+      #   form_url = "https://forms.office.com"
+      # )
     ),
     tags$script(
       src = "script.js"

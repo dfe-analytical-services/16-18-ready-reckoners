@@ -38,135 +38,66 @@ national_chart_panel <- function() {
         ),
         column(
           width = 12,
-          div(
-            class = "well",
-            style = "min-height: 100%; height: 100%; overflow-y: visible",
-            gov_row(
-              # column(
-              #   width = 6,
-              #   selectizeInput(
-              #     inputId = "ReportYr_select",
-              #     label = "1. Select a report year",
-              #     choices = unique(qual_lookup$ReportYr), # list(ReportYr = sort(unique(qual_lookup$ReportYr))),
-              #     selected = max(qual_lookup$ReportYr)
-              #   )
-              # ),
-              column(
-                width = 6,
-                selectizeInput(
-                  inputId = "dropdown_cohort",
-                  label = "Select an exam cohort",
-                  choices = unique(data$qualid_lookup$cohort_name),
-                  selected = "A level"
+          h2("Prior attainment and outcome attainment using national data"),
+          br(),
+          
+          column(
+            width = 12,
+            div(
+              class = "well",
+              style = "min-height: 100%; height: 100%; overflow-y: visible",
+              gov_row(
+                column(
+                  width = 6,
+                  selectizeInput(
+                    inputId = "national_dropdown_cohort",
+                    label = "Select an exam cohort",
+                    choices = unique(data$qualid_lookup$cohort_name),
+                    selected = "A level"
+                  )
+                ),
+                column(
+                  width = 6,
+                  selectizeInput(
+                    inputId = "national_dropdown_qualifications",
+                    label = "Select a qualification",
+                    choices = unique(data$qualid_lookup$qualification_name),
+                    selected = "GCE A level"
+                  )
+                ),
+                column(
+                  width = 6,
+                  selectizeInput(
+                    inputId = "national_dropdown_subjects",
+                    label = "Select a subject",
+                    choices = unique(data$qualid_lookup$subject_name),
+                    selected = "Mathematics"
+                  )
+                ),
+                column(
+                  width = 6,
+                  selectizeInput(
+                    inputId = "national_dropdown_sizes",
+                    label = "Select a size",
+                    choices = unique(data$qualid_lookup$size)
+                  )
+                ),
+                column(
+                  width = 12,
+                  radioButtons(inputId = "data_source", 
+                               label = "Select data source: ", 
+                               choices = c("National data only", "National and User Institution data")
+                  )
                 )
-              ),
-              column(
-                width = 6,
-                selectizeInput(
-                  inputId = "dropdown_qualifications",
-                  label = "Select a qualification",
-                  choices = unique(data$qualid_lookup$qualification_name),
-                  selected = "GCE A level"
-                )
-              ),
-              column(
-                width = 6,
-                selectizeInput(
-                  inputId = "dropdown_subjects",
-                  label = "Select a subject",
-                  choices = unique(data$qualid_lookup$subject_name),
-                  selected = "Mathematics"
-                )
-              ),
-              column(
-                width = 6,
-                selectizeInput(
-                  inputId = "dropdown_sizes",
-                  label = "Select a size",
-                  choices = unique(data$qualid_lookup$size)
-                )
-              ),
-              #
-              #       column(
-              #         width = 6,
-              #         selectizeInput(
-              #           inputId = "grade_structure_select",
-              #           label = "5. Select a grade structure",
-              #           choices = list(GradeStructures = sort(qual_lookup$gradeStructure))
-              #         )
-              #       ),
-              #     )
-              #   )
-              # ),
-              #
-              #
-              #
-              #
-              # column(
-              #   width=12,
-              #   gov_row(
-              #     column(
-              #       width = 12,
-              #       br(),
-              #       br(),
-              #       htmlOutput("tm_title"),
-              #       DT::dataTableOutput("tm_table") %>% withSpinner(color="#1d70b8")
-              #     )
-              #   )
-              # )#,
-
-
-
-              column(
-                width = 12,
-                br(),
-                br(),
-                plotOutput("subject_chart", height = "15cm") %>% withSpinner(color = "#1d70b8"),
-                br(),
-                br()
               )
-
-
-
-
-
-
-
-
-
-
-              # column(
-              #   width=12,
-              #   div(
-              #     class = "well",
-              #     style = "min-height: 100%; height: 100%; overflow-y: visible",
-              #     gov_row(
-              #       column(
-              #         width = 12,
-              #         paste("Download the underlying data for this dashboard:"), br(),
-              #         downloadButton(
-              #           outputId = "tm_data_download_numbers",
-              #           label= "Download (all student numbers data)",
-              #           icon = shiny::icon("download"),
-              #           class = "downloadButton"
-              #         ),
-              #         br(),
-              #         br()
-              #       ),
-              #
-              #       column(
-              #         width = 12,
-              #         downloadButton(
-              #           outputId = "tm_data_download_percentage",
-              #           label= "Download (all student percentage data)",
-              #           icon = shiny::icon("download"),
-              #           class = "downloadButton"
-              #         )
-              #       )
-              #
-              #     )
-              #   )
-              # )
+            ),
+            column(
+              width = 10,
+              br(),
+              br(),
+              plotOutput("subject_chart", height = "15cm") %>% withSpinner(color = "#1d70b8"),
+              br(),
+              br()
             )
           )
         )

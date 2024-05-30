@@ -24,10 +24,10 @@
 server <- function(input, output, session) {
   # Loading screen -------------------------------------------------------------
   # Call initial loading screen
-
+  
   hide(id = "loading-content", anim = TRUE, animType = "fade")
   show("app-content")
-
+  
   # The template uses bookmarking to store input choices in the url. You can
   # exclude specific inputs (for example extra info created for a datatable
   # or plotly chart) using the list below, but it will need updating to match
@@ -44,17 +44,17 @@ server <- function(input, output, session) {
     "plotly_click-A", "plotly_hover-A", "plotly_afterplot-A",
     ".clientValue-default-plotlyCrosstalkOpts"
   ))
-
+  
   observe({
     # Trigger this observer every time an input changes
     reactiveValuesToList(input)
     session$doBookmark()
   })
-
+  
   onBookmarked(function(url) {
     updateQueryString(url)
   })
-
+  
   observe({
     if (input$navlistPanel == "dashboard") {
       change_window_title(
@@ -75,7 +75,7 @@ server <- function(input, output, session) {
       )
     }
   })
-
+  
   observeEvent(input$cookies, {
     if (!is.null(input$cookies)) {
       if (!("dfe_analytics" %in% names(input$cookies))) {
@@ -100,7 +100,7 @@ server <- function(input, output, session) {
       shinyjs::hide(id = "cookieMain")
     }
   })
-
+  
   # Need these set of observeEvent to create a path through the cookie banner
   observeEvent(input$cookieAccept, {
     msg <- list(
@@ -112,7 +112,7 @@ server <- function(input, output, session) {
     shinyjs::show(id = "cookieAcceptDiv")
     shinyjs::hide(id = "cookieMain")
   })
-
+  
   observeEvent(input$cookieReject, {
     msg <- list(
       name = "dfe_analytics",
@@ -123,15 +123,15 @@ server <- function(input, output, session) {
     shinyjs::show(id = "cookieRejectDiv")
     shinyjs::hide(id = "cookieMain")
   })
-
+  
   observeEvent(input$hideAccept, {
     shinyjs::toggle(id = "cookieDiv")
   })
-
+  
   observeEvent(input$hideReject, {
     shinyjs::toggle(id = "cookieDiv")
   })
-
+  
   observeEvent(input$remove, {
     shinyjs::toggle(id = "cookieMain")
     msg <- list(name = "dfe_analytics", value = "denied")
@@ -139,11 +139,11 @@ server <- function(input, output, session) {
     session$sendCustomMessage("analytics-consent", msg)
     print(input$cookies)
   })
-
+  
   cookies_data <- reactive({
     input$cookies
   })
-
+  
   output$cookie_status <- renderText({
     cookie_text_stem <- "To better understand the reach of our dashboard tools,
     this site uses cookies to identify numbers of unique users as part of Google
@@ -161,35 +161,35 @@ server <- function(input, output, session) {
       "Cookies consent has not been confirmed."
     }
   })
-
+  
   observeEvent(input$cookieLink, {
     # Need to link here to where further info is located.  You can
     # updateTabsetPanel to have a cookie page for instance
     updateTabsetPanel(session, "navlistPanel",
-      selected = "Support and feedback"
+                      selected = "Support and feedback"
     )
   })
-
-
+  
+  
   #  output$cookie_status <- renderText(as.character(input$cookies))
-
+  
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- User data upload ----
   # -----------------------------------------------------------------------------------------------------------------------------
-
+  
   user_data <- reactive({
     req(input$upload)
-
+    
     # 1. validation test 1: check file extension
     ext <- tools::file_ext(input$upload$name)
-
+    
     validate(
       need(ext == "csv", "Invalid file type; Please use the template .csv file")
     )
-
+    
     # 2. if validation test 1 passes, upload the data ready for column name checking
     pupil_data <- vroom::vroom(input$upload$datapath, delim = ",")
-
+    
     # 3. validation test 2: check column names
     expected_column_names <- c(
       "forename", "surname", "gender", "qualification_code", "qualification_name", "subject_code",
@@ -197,11 +197,11 @@ server <- function(input, output, session) {
       "value_added_score", "qual_id", "disadvantaged_status", "forvus_id", "laestab"
     )
     actual_column_names <- colnames(pupil_data)
-
+    
     validate(
       need(identical(expected_column_names, actual_column_names), "Invalid column name detected or column missing; Please use the template to upload pupil data")
     )
-
+    
     # 4. if validation test 2 fails the code will exit, but if it passes the code will continue to return the pupil data
     pupil_data <- pupil_data %>% mutate(
       qualification_code = as.character(qualification_code),
@@ -211,11 +211,11 @@ server <- function(input, output, session) {
       forvus_id = as.character(forvus_id),
       laestab = as.character(laestab)
     )
-
+    
     return(pupil_data)
   })
-
-
+  
+  
   output$input_preview <- renderDataTable({
     datatable(
       head(user_data(), input$n),
@@ -228,106 +228,228 @@ server <- function(input, output, session) {
       )
     )
   })
-
-
+  
+  
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- Dropdown boxes ----
   # -----------------------------------------------------------------------------------------------------------------------------
-
-  # dropdown_cohort_choices <- unique(data$qualid_lookup$cohort_name)
-  # dropdown_qualification_choices <- unique(data$qualid_lookup$cohort_name)
-
-
-  observe({
-    updateSelectInput(session,
-      inputId = "dropdown_cohort",
-      label = NULL,
-      choices <- user_data() %>%
-        select(cohort_name) %>%
-        distinct() %>%
-        pull(cohort_name) %>%
-        sort(.)
-    )
+  
+  
+  # ---- NATIONAL ----
+  observe(if(input$data_source == "National data only"){
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_cohort",
+                        label = NULL,
+                        choices <- data$qualid_lookup %>%
+                          select(cohort_name) %>%
+                          distinct() %>%
+                          pull(cohort_name) %>%
+                          sort(.))
+    })
+    
+    
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_qualifications",
+                        label = NULL,
+                        choices <- data$qualid_lookup %>%
+                          select(cohort_name, qualification_name) %>%
+                          distinct() %>%
+                          filter(cohort_name == input$national_dropdown_cohort) %>%
+                          pull(qualification_name) %>%
+                          sort(.))
+    })
+    
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_subjects",
+                        label = NULL,
+                        choices <- data$qualid_lookup %>%
+                          select(cohort_name, qualification_name, subject_name) %>%
+                          distinct() %>%
+                          filter(cohort_name == input$national_dropdown_cohort,
+                                 qualification_name == input$national_dropdown_qualifications) %>%
+                          pull(subject_name) %>%
+                          sort(.))
+    })
+    
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_sizes",
+                        label = NULL,
+                        choices <- data$qualid_lookup %>%
+                          select(cohort_name, qualification_name, subject_name, size) %>%
+                          distinct() %>%
+                          filter(cohort_name == input$national_dropdown_cohort,
+                                 qualification_name == input$national_dropdown_qualifications,
+                                 subject_name == input$national_dropdown_subjects) %>%
+                          pull(size) %>%
+                          sort(.)
+      )
+    })
+    
+  }
+  else{
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_cohort",
+                        label = NULL,
+                        choices <- user_data() %>%
+                          select(cohort_name) %>%
+                          distinct() %>%
+                          pull(cohort_name) %>%
+                          sort(.))})
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_qualifications",
+                        label = NULL,
+                        choices <- user_data() %>%
+                          select(cohort_name, qualification_name) %>%
+                          distinct() %>%
+                          filter(cohort_name == input$national_dropdown_cohort) %>%
+                          pull(qualification_name) %>%
+                          sort(.))})
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_subjects",
+                        label = NULL,
+                        choices <- user_data() %>%
+                          select(cohort_name, qualification_name, subject_name) %>%
+                          distinct() %>%
+                          filter(cohort_name == input$national_dropdown_cohort,
+                                 qualification_name == input$national_dropdown_qualifications) %>%
+                          pull(subject_name) %>%
+                          sort(.))})
+    observe({
+      updateSelectInput(session,
+                        inputId = "national_dropdown_sizes",
+                        label = NULL,
+                        choices <- user_data() %>%
+                          select(cohort_name, qualification_name, subject_name, size) %>%
+                          distinct() %>%
+                          filter(cohort_name == input$national_dropdown_cohort,
+                                 qualification_name == input$national_dropdown_qualifications,
+                                 subject_name == input$national_dropdown_subjects) %>%
+                          pull(size) %>%
+                          sort(.))})
   })
-
-
-  observe({
-    updateSelectInput(session,
-      inputId = "dropdown_qualifications",
-      label = NULL,
-      choices <- user_data() %>%
-        select(cohort_name, qualification_code) %>%
-        distinct() %>%
-        left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code")) %>%
-        filter(cohort_name == input$dropdown_cohort) %>%
-        pull(qualification_name) %>%
-        sort(.)
-    )
-  })
-
-  observe({
-    updateSelectInput(session,
-      inputId = "dropdown_subjects",
-      label = NULL,
-      choices <- user_data() %>%
-        select(cohort_name, qualification_code, subject_code) %>%
-        distinct() %>%
-        left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code", "subject_code")) %>%
-        filter(
-          cohort_name == input$dropdown_cohort,
-          qualification_name == input$dropdown_qualifications
-        ) %>%
-        pull(subject_name) %>%
-        sort(.)
-    )
-  })
-
-  observe({
-    updateSelectInput(session,
-      inputId = "dropdown_sizes",
-      label = NULL,
-      choices <- user_data() %>%
-        select(cohort_name, qualification_code, subject_code, size) %>%
-        distinct() %>%
-        left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code", "subject_code", "size")) %>%
-        filter(
-          cohort_name == input$dropdown_cohort,
-          qualification_name == input$dropdown_qualifications,
-          subject_name == input$dropdown_subjects
-        ) %>%
-        pull(size) %>%
-        sort(.)
-    )
-  })
-
-
+  
+  
+  
+  
+  
+  
+  
+  
+  # # ---- NATIONAL AND USER INSTITUTION ----
+  # 
+  # observe({
+  #   updateSelectInput(session,
+  #                     inputId = "dropdown_cohort",
+  #                     label = NULL,
+  #                     choices <- user_data() %>%
+  #                       select(cohort_name) %>%
+  #                       distinct() %>%
+  #                       pull(cohort_name) %>%
+  #                       sort(.)
+  #   )
+  # })
+  # 
+  # 
+  # observe({
+  #   updateSelectInput(session,
+  #                     inputId = "dropdown_qualifications",
+  #                     label = NULL,
+  #                     choices <- user_data() %>%
+  #                       select(cohort_name, qualification_code) %>%
+  #                       distinct() %>%
+  #                       left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code")) %>%
+  #                       filter(cohort_name == input$dropdown_cohort) %>%
+  #                       pull(qualification_name) %>%
+  #                       sort(.)
+  #   )
+  # })
+  # 
+  # observe({
+  #   updateSelectInput(session,
+  #                     inputId = "dropdown_subjects",
+  #                     label = NULL,
+  #                     choices <- user_data() %>%
+  #                       select(cohort_name, qualification_code, subject_code) %>%
+  #                       distinct() %>%
+  #                       left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code", "subject_code")) %>%
+  #                       filter(
+  #                         cohort_name == input$dropdown_cohort,
+  #                         qualification_name == input$dropdown_qualifications
+  #                       ) %>%
+  #                       pull(subject_name) %>%
+  #                       sort(.)
+  #   )
+  # })
+  # 
+  # observe({
+  #   updateSelectInput(session,
+  #                     inputId = "dropdown_sizes",
+  #                     label = NULL,
+  #                     choices <- user_data() %>%
+  #                       select(cohort_name, qualification_code, subject_code, size) %>%
+  #                       distinct() %>%
+  #                       left_join(data$qualid_lookup, by = c("cohort_name", "qualification_code", "subject_code", "size")) %>%
+  #                       filter(
+  #                         cohort_name == input$dropdown_cohort,
+  #                         qualification_name == input$dropdown_qualifications,
+  #                         subject_name == input$dropdown_subjects
+  #                       ) %>%
+  #                       pull(size) %>%
+  #                       sort(.)
+  #   )
+  # })
+  # 
+  
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- QUAL_ID ----
   # -----------------------------------------------------------------------------------------------------------------------------
-
-  reactive_qualid <- reactive({
+  
+  ## create a reactive qual_id based on the selections currently in the drop down boxes
+  
+  # reactive_qualid <- reactive({
+  #   data$qualid_lookup %>%
+  #     filter(cohort_name == input$dropdown_cohort,
+  #            qualification_name == input$dropdown_qualifications,
+  #            subject_name == input$dropdown_subjects,
+  #            size == input$dropdown_sizes) %>%
+  #     select(qual_id)
+  # })
+  
+  
+  national_reactive_qualid <- reactive({
+    req(input$national_dropdown_cohort)
+    req(input$national_dropdown_qualifications)
+    req(input$national_dropdown_subjects)
+    req(input$national_dropdown_sizes)
+    
     data$qualid_lookup %>%
-      filter(
-        cohort_name == input$dropdown_cohort,
-        qualification_name == input$dropdown_qualifications,
-        subject_name == input$dropdown_subjects,
-        size == input$dropdown_sizes
-      ) %>%
+      filter(cohort_name == input$national_dropdown_cohort,
+             qualification_name == input$national_dropdown_qualifications,
+             subject_name == input$national_dropdown_subjects,
+             size == input$national_dropdown_sizes) %>%
       select(qual_id)
   })
-
-
+  
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- NATIONAL SUBJECT CHART DATA ----
   # -----------------------------------------------------------------------------------------------------------------------------
-
-  subject_chart_data <- reactive({
-    req(reactive_qualid())
-
-    print(reactive_qualid())
-
-    line_chart_data <- data$national_bands %>%
-      filter(qual_id == as.character(reactive_qualid())) %>%
+  
+  ## extract the relevant national data for the subject comparison chart based on the reactive qual_id
+  
+  national_subject_chart_data <- reactive({
+    req(national_reactive_qualid())
+    
+    print(national_reactive_qualid())
+    
+    full_chart_data <- data$national_bands %>%
+      filter(qual_id == as.character(national_reactive_qualid())) %>%
       select(starts_with(c("x", "y"))) %>%
       pivot_longer(
         everything(),
@@ -337,36 +459,61 @@ server <- function(input, output, session) {
       ) %>%
       mutate(source = "national") %>%
       select(-set)
-
-    # if(is.null(user_data()))
-    #   print("no user data")
-    # else
-    #   print("user data uploaded")
-
+    
+    return(full_chart_data)
+  })
+  
+  
+  user_subject_chart_data <- reactive({
+    req(national_reactive_qualid())
+    
+    print(national_reactive_qualid())
+    
+    line_chart_data <- data$national_bands %>%
+      filter(qual_id == as.character(national_reactive_qualid())) %>%
+      select(starts_with(c("x", "y"))) %>%
+      pivot_longer(
+        everything(),
+        cols_vary = "slowest",
+        names_to = c(".value", "set"),
+        names_sep = "_"
+      ) %>%
+      mutate(source = "national") %>%
+      select(-set)
+    
     user_chart_data <- user_data() %>%
-      filter(qual_id == as.character(reactive_qualid())) %>%
+      filter(qual_id == as.character(national_reactive_qualid())) %>%
       select(x = prior_attainment, y = actual_points) %>%
       mutate(source = "user")
-
+    
     full_chart_data <- rbind(line_chart_data, user_chart_data)
     print(user_data())
     print(line_chart_data)
-
+    
     return(full_chart_data)
   })
-
-
-
-
-
-
+  
+  
+  
+  
+  subject_chart_data <- reactive(if(input$data_source == "National data only"){
+    national_subject_chart_data()
+  }
+  else{
+    user_subject_chart_data()
+  })
+  
+  
+  
+  
+  
   output$subject_chart <- renderPlot({
-    req(reactive_qualid())
-
+    req(subject_chart_data())
+    
     max_x <- subject_chart_data() %>%
       select(x) %>%
       max()
-
+    
     ggplot(subject_chart_data(), aes(x = x, y = y, color = source, shape = source)) +
       geom_line(data = filter(subject_chart_data(), source == "national")) +
       geom_point(data = filter(subject_chart_data(), source == "user"), size = 4) +
@@ -384,24 +531,56 @@ server <- function(input, output, session) {
       scale_colour_manual(values = c("black", "red")) +
       scale_shape_manual(values = c(NA, 4))
   })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  # 
+  # output$subject_chart <- renderPlot({
+  #   req(reactive_qualid())
+  #   
+  #   max_x <- subject_chart_data() %>%
+  #     select(x) %>%
+  #     max()
+  #   
+  #   ggplot(subject_chart_data(), aes(x = x, y = y, color = source, shape = source)) +
+  #     geom_line(data = filter(subject_chart_data(), source == "national")) +
+  #     geom_point(data = filter(subject_chart_data(), source == "user"), size = 4) +
+  #     theme(
+  #       panel.grid.major = element_blank(),
+  #       panel.grid.minor = element_blank(),
+  #       panel.border = element_blank(),
+  #       axis.line = element_line(color = "black"),
+  #       axis.title = element_text(size = 20),
+  #       axis.text = element_text(size = 16)
+  #     ) +
+  #     xlab("Prior Attainment (points)") +
+  #     ylab("Outcome Attainment (points)") +
+  #     scale_x_continuous(breaks = seq(0, max_x, by = 2)) +
+  #     scale_colour_manual(values = c("black", "red")) +
+  #     scale_shape_manual(values = c(NA, 4))
+  # })
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  
+  
   # reactiveRevBal <- reactive({
   #   dfRevBal %>% filter(
   #     area_name == input$selectArea | area_name == "England",
@@ -648,10 +827,10 @@ server <- function(input, output, session) {
   # output$dropdown_label <- renderText({
   #   paste0("Current selections: ", input$selectPhase, ", ", input$selectArea)
   # })
-
-
+  
+  
   # Stop app -------------------------------------------------------------------
-
+  
   session$onSessionEnded(function() {
     stopApp()
   })

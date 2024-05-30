@@ -40,7 +40,6 @@ national_chart_panel <- function() {
           width = 12,
           h2("Prior attainment and outcome attainment using national data"),
           br(),
-          
           column(
             width = 12,
             div(
@@ -50,7 +49,7 @@ national_chart_panel <- function() {
                 column(
                   width = 6,
                   selectizeInput(
-                    inputId = "national_dropdown_cohort",
+                    inputId = "dropdown_cohort",
                     label = "Select an exam cohort",
                     choices = unique(data$qualid_lookup$cohort_name),
                     selected = "A level"
@@ -59,7 +58,7 @@ national_chart_panel <- function() {
                 column(
                   width = 6,
                   selectizeInput(
-                    inputId = "national_dropdown_qualifications",
+                    inputId = "dropdown_qualifications",
                     label = "Select a qualification",
                     choices = unique(data$qualid_lookup$qualification_name),
                     selected = "GCE A level"
@@ -68,7 +67,7 @@ national_chart_panel <- function() {
                 column(
                   width = 6,
                   selectizeInput(
-                    inputId = "national_dropdown_subjects",
+                    inputId = "dropdown_subjects",
                     label = "Select a subject",
                     choices = unique(data$qualid_lookup$subject_name),
                     selected = "Mathematics"
@@ -77,16 +76,17 @@ national_chart_panel <- function() {
                 column(
                   width = 6,
                   selectizeInput(
-                    inputId = "national_dropdown_sizes",
+                    inputId = "dropdown_sizes",
                     label = "Select a size",
                     choices = unique(data$qualid_lookup$size)
                   )
                 ),
                 column(
                   width = 12,
-                  radioButtons(inputId = "data_source", 
-                               label = "Select data source: ", 
-                               choices = c("National data only", "National and User Institution data")
+                  radioButtons(
+                    inputId = "data_source",
+                    label = "Select data source: ",
+                    choices = c("National data only", "National and User Institution data")
                   )
                 )
               )

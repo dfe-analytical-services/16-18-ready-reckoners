@@ -34,6 +34,8 @@ shhh(library(dfeshiny))
 shhh(library(ggiraph))
 shhh(library(readxl))
 shhh(library(snakecase))
+shhh(library(tidyr))
+shhh(library(shinycssloaders))
 # shhh(library(shinya11y))
 
 # Functions --------------------------------------------------------------------
@@ -122,7 +124,20 @@ colnames(data$qualid_lookup) <- to_snake_case(colnames(data$qualid_lookup))
 colnames(data$gnumber_lookup) <- to_snake_case(colnames(data$gnumber_lookup))
 colnames(data$disadvantaged_variance) <- to_snake_case(colnames(data$disadvantaged_variance))
 
-data$national_bands <- data$national_bands %>% mutate(qual_id = as.character(qual_id))
+data$national_bands <- data$national_bands %>%
+  mutate(
+    qual_id = as.character(qual_id)
+  ) %>%
+  rename(
+    avg_prior_x_0 = prior_min,
+    avg_prior_x_21 = prior_max,
+    avg_outcome_y_0 = outcome_min,
+    avg_outcome_y_21 = outcome_max
+  )
+
+colnames(data$national_bands) <- gsub(".*prior_", "", colnames(data$national_bands))
+colnames(data$national_bands) <- gsub(".*outcome_", "", colnames(data$national_bands))
+
 data$subject_variance <- data$subject_variance %>% mutate(
   qual_id = as.character(qual_id),
   qual_co_id = as.character(qual_co_id),
@@ -134,7 +149,9 @@ data$qualification_variance <- data$qualification_variance %>% mutate(
   qual_co_id = as.character(qual_co_id),
   sublevno = as.character(sublevno)
 )
-data$points_lookup <- data$points_lookup %>% mutate(qualification_code = as.character(qualification_code))
+data$points_lookup <- data$points_lookup %>% mutate(
+  qualification_code = as.character(qualification_code)
+)
 data$subject_chart <- data$subject_chart %>% mutate(
   qual_id = as.character(qual_id),
   exam_cohort = as.character(exam_cohort),
@@ -166,35 +183,6 @@ data$disadvantaged_variance <- data$disadvantaged_variance %>% mutate(
 
 
 
-# Read in the data
-# dfRevBal <- read_revenue_data()
-# # Get geographical levels from data
-# dfAreas <- dfRevBal %>%
-#   select(
-#     geographic_level, country_name, country_code,
-#     region_name, region_code,
-#     la_name, old_la_code, new_la_code
-#   ) %>%
-#   distinct()
-#
-# choicesLAs <- dfAreas %>%
-#   filter(geographic_level == "Local authority") %>%
-#   select(geographic_level, area_name = la_name) %>%
-#   arrange(area_name)
-#
-# choicesAreas <- dfAreas %>%
-#   filter(geographic_level == "National") %>%
-#   select(geographic_level, area_name = country_name) %>%
-#   rbind(
-#     dfAreas %>%
-#       filter(geographic_level == "Regional") %>%
-#       select(geographic_level, area_name = region_name)
-#   ) %>%
-#   rbind(choicesLAs)
-#
-# choicesYears <- unique(dfRevBal$time_period)
-#
-# choicesPhase <- unique(dfRevBal$school_phase)
 
 expandable <- function(inputId, label, contents) {
   govDetails <- shiny::tags$details(

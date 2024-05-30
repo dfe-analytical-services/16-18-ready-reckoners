@@ -4,10 +4,6 @@ data_upload_panel <- function() {
   tabPanel(
     value = "dashboard",
     "Data upload",
-
-    # Define UI for application that draws a histogram
-
-    # Sidebar with a slider input for number of bins
     gov_main_layout(
       gov_row(
         column(
@@ -18,13 +14,10 @@ data_upload_panel <- function() {
       gov_row(
         column(
           width = 12,
-          # fileInput("upload", NULL, buttonLabel = "Upload pupil data", multiple = FALSE),
-          # tableOutput("pupil_data")
           p("Please upload a .csv file containing the pupil level data for use in the 2019 Ready Reckoner"),
           fileInput("upload", NULL, buttonLabel = "Browse", accept = c(".csv")),
           numericInput("n", "Number of rows to preview", value = 5, min = 1, step = 1),
           DTOutput("input_preview")
-          # tableOutput("input_preview")
         )
       )
     )
@@ -92,7 +85,7 @@ national_chart_panel <- function() {
                   label = "Select a size",
                   choices = unique(data$qualid_lookup$size)
                 )
-              ) # ,
+              ),
               #
               #       column(
               #         width = 6,
@@ -121,6 +114,25 @@ national_chart_panel <- function() {
               #     )
               #   )
               # )#,
+
+
+
+              column(
+                width = 12,
+                br(),
+                br(),
+                plotOutput("subject_chart", height = "15cm") %>% withSpinner(color = "#1d70b8"),
+                br(),
+                br()
+              )
+
+
+
+
+
+
+
+
 
 
               # column(

@@ -234,6 +234,10 @@ server <- function(input, output, session) {
   # ---- Dropdown boxes ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
+  # dropdown_cohort_choices <- unique(data$qualid_lookup$cohort_name)
+  # dropdown_qualification_choices <- unique(data$qualid_lookup$cohort_name)
+
+
   observe({
     updateSelectInput(session,
       inputId = "dropdown_cohort",
@@ -241,7 +245,6 @@ server <- function(input, output, session) {
       choices <- user_data() %>%
         select(cohort_name) %>%
         distinct() %>%
-        left_join(data$qualid_lookup, by = "cohort_name") %>%
         pull(cohort_name) %>%
         sort(.)
     )
@@ -296,6 +299,102 @@ server <- function(input, output, session) {
         sort(.)
     )
   })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- QUAL_ID ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  reactive_qualid <- reactive({
+    data$qualid_lookup %>%
+      filter(
+        cohort_name == input$dropdown_cohort,
+        qualification_name == input$dropdown_qualifications,
+        subject_name == input$dropdown_subjects,
+        size == input$dropdown_sizes
+      ) %>%
+      select(qual_id)
+  })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- NATIONAL SUBJECT CHART DATA ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  subject_chart_data <- reactive({
+    req(reactive_qualid())
+
+    print(reactive_qualid())
+
+    line_chart_data <- data$national_bands %>%
+      filter(qual_id == as.character(reactive_qualid())) %>%
+      select(starts_with(c("x", "y"))) %>%
+      pivot_longer(
+        everything(),
+        cols_vary = "slowest",
+        names_to = c(".value", "set"),
+        names_sep = "_"
+      ) %>%
+      mutate(source = "national") %>%
+      select(-set)
+
+    # if(is.null(user_data()))
+    #   print("no user data")
+    # else
+    #   print("user data uploaded")
+
+    user_chart_data <- user_data() %>%
+      filter(qual_id == as.character(reactive_qualid())) %>%
+      select(x = prior_attainment, y = actual_points) %>%
+      mutate(source = "user")
+
+    full_chart_data <- rbind(line_chart_data, user_chart_data)
+    print(user_data())
+    print(line_chart_data)
+
+    return(full_chart_data)
+  })
+
+
+
+
+
+
+  output$subject_chart <- renderPlot({
+    req(reactive_qualid())
+
+    max_x <- subject_chart_data() %>%
+      select(x) %>%
+      max()
+
+    ggplot(subject_chart_data(), aes(x = x, y = y, color = source, shape = source)) +
+      geom_line(data = filter(subject_chart_data(), source == "national")) +
+      geom_point(data = filter(subject_chart_data(), source == "user"), size = 4) +
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        axis.line = element_line(color = "black"),
+        axis.title = element_text(size = 20),
+        axis.text = element_text(size = 16)
+      ) +
+      xlab("Prior Attainment (points)") +
+      ylab("Outcome Attainment (points)") +
+      scale_x_continuous(breaks = seq(0, max_x, by = 2)) +
+      scale_colour_manual(values = c("black", "red")) +
+      scale_shape_manual(values = c(NA, 4))
+  })
+
+
+
+
+
+
+
+
+
+
+
 
 
 

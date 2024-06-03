@@ -8,7 +8,7 @@ data_upload_panel <- function() {
       gov_row(
         column(
           width = 12,
-          h1("Pupil data upload")
+          h1("Student data upload")
         )
       ),
       gov_row(
@@ -24,6 +24,28 @@ data_upload_panel <- function() {
   )
 }
 
+student_va_panel <- function() {
+  tabPanel(
+    value = "dashboard",
+    "Student value added",
+    gov_main_layout(
+      gov_row(
+        column(
+          width = 12,
+          h1("Value Added scores for each student")
+        )
+      ),
+      gov_row(
+        column(
+          width = 12,
+          DTOutput("student_va_scores")
+        )
+      )
+    )
+  )
+}
+
+
 national_chart_panel <- function() {
   tabPanel(
     value = "dashboard",
@@ -38,7 +60,7 @@ national_chart_panel <- function() {
         ),
         column(
           width = 12,
-          h2("Prior attainment and outcome attainment using national data"),
+          h2("A comparison between prior attainment and outcome attainment using national data and optional institution data"),
           br(),
           column(
             width = 12,

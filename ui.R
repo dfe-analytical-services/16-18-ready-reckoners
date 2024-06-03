@@ -131,6 +131,7 @@ ui <- function(input, output, session) {
       widths = c(2, 8),
       well = FALSE,
       data_upload_panel(),
+      student_va_panel(),
       national_chart_panel()
       # dashboard_panel(),
       # homepage_panel(),

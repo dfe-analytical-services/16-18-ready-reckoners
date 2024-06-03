@@ -231,6 +231,76 @@ server <- function(input, output, session) {
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- User data - pupil value added ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  minpositive <- function(x) min(x[x >= 0])
+
+  ## 1. determine the upper and lower bands each pupil prior attainment falls between
+
+  ## 1.a. pivot the user data into long format
+  ## 1.b calculate the difference between pupil prior attainment and each x band
+  pupil_pava_bands <- reactive({
+    req(user_data())
+
+    user_data() %>%
+      select(-c(qualification_name, subject_name, cohort_name)) %>%
+      left_join(data$national_bands, by = "qual_id") %>%
+      pivot_longer(
+        cols = starts_with(c("x", "y")),
+        cols_vary = "slowest",
+        names_to = c(".value", "band"),
+        names_sep = "_"
+      ) %>%
+      mutate(difference_x = prior_attainment - x)
+  })
+
+  ## 1.c. identify which band has the smallest positive difference and set to TRUE
+  ## 1.d. in some instances there may be multiple lower bands (all with the same value) so we want to select the highest possible band to be lower_band
+  ## 1.e. we can then define upper_band to be lower_band plus 1
+  pupil_pava_bands_flags <- reactive({
+    req(pupil_pava_bands())
+
+    pupil_pava_bands() %>%
+      group_by(forvus_id, qual_id) %>%
+      mutate(smallest_positive_difference = difference_x == minpositive(difference_x)) %>%
+      filter(smallest_positive_difference == TRUE) %>%
+      slice_max(band) %>%
+      select(forvus_id, qual_id, lower_band = band) %>%
+      mutate(upper_band = as.character(as.numeric(lower_band) + 1)) %>%
+      ungroup()
+  })
+
+  ## 1.f. join the two tables and filter band to only include lower and upper band values
+  ## 1.g. this should leave two rows per pupil, with the lower and upper x and y values from the pava
+  pupil_pava_bands_filtered <- reactive({
+    req(pupil_pava_bands_flags())
+
+    pupil_pava_bands() %>%
+      inner_join(pupil_pava_bands_flags(), by = c("forvus_id", "qual_id")) %>%
+      filter(band == lower_band | band == upper_band) %>%
+      arrange(forvus_id, qual_id)
+  })
+
+
+
+  output$student_va_scores <- renderDataTable({
+    datatable(
+      head(pupil_pava_bands_filtered(), input$n),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE
+      )
+    )
+  })
+
+
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
   # ---- Dropdown boxes ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
@@ -435,7 +505,6 @@ server <- function(input, output, session) {
   } else {
     user_subject_chart_data()
   })
-
 
 
 

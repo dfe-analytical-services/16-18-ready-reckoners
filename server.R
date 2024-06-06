@@ -192,9 +192,11 @@ server <- function(input, output, session) {
 
     # 3. validation test 2: check column names
     expected_column_names <- c(
-      "forename", "surname", "gender", "qualification_code", "qualification_name", "subject_code",
-      "subject_name", "size", "cohort_name", "prior_attainment", "estimated_points", "actual_points",
-      "value_added_score", "qual_id", "disadvantaged_status", "forvus_id", "laestab"
+      "unique_identifier", "forename", "surname", "gender", "forvus_id", 
+      "cohort_code", "cohort_name", 
+      "qualification_code", "qualification_name", 
+      "subject_code", "subject_name", "size", "qual_id", 
+      "prior_attainment", "actual_points", "disadvantaged_status"
     )
     actual_column_names <- colnames(pupil_data)
 
@@ -204,12 +206,11 @@ server <- function(input, output, session) {
 
     # 4. if validation test 2 fails the code will exit, but if it passes the code will continue to return the pupil data
     pupil_data <- pupil_data %>% mutate(
+      forvus_id = as.character(forvus_id),
       qualification_code = as.character(qualification_code),
       subject_code = as.character(subject_code),
       qual_id = as.character(qual_id),
-      disadvantaged_status = as.integer(disadvantaged_status),
-      forvus_id = as.character(forvus_id),
-      laestab = as.character(laestab)
+      disadvantaged_status = as.integer(disadvantaged_status)
     )
 
     return(pupil_data)
@@ -252,7 +253,7 @@ server <- function(input, output, session) {
         names_to = c(".value", "band"),
         names_sep = "_"
       ) %>%
-      mutate(difference_x = prior_attainment - x)
+      mutate(difference_prior_x = prior_attainment - x)
   })
 
   ## 1.c. identify which band has the smallest positive difference and set to TRUE
@@ -263,7 +264,7 @@ server <- function(input, output, session) {
 
     pupil_pava_bands() %>%
       group_by(forvus_id, qual_id) %>%
-      mutate(smallest_positive_difference = difference_x == minpositive(difference_x)) %>%
+      mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
       filter(smallest_positive_difference == TRUE) %>%
       slice_max(band) %>%
       select(forvus_id, qual_id, lower_band = band) %>%

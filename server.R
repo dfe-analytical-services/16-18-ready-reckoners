@@ -192,10 +192,10 @@ server <- function(input, output, session) {
 
     # 3. validation test 2: check column names
     expected_column_names <- c(
-      "unique_identifier", "forename", "surname", "gender", "forvus_id", 
-      "cohort_code", "cohort_name", 
-      "qualification_code", "qualification_name", 
-      "subject_code", "subject_name", "size", "qual_id", 
+      "unique_identifier", "forename", "surname", "gender", "forvus_id",
+      "cohort_code", "cohort_name",
+      "qualification_code", "qualification_name",
+      "subject_code", "subject_name", "size", "qual_id",
       "prior_attainment", "actual_points", "disadvantaged_status"
     )
     actual_column_names <- colnames(pupil_data)

@@ -53,16 +53,12 @@ data_checking_panel <- function() {
           h2("1. Exam cohort check:"),
           p("This check confirms the exam cohort code and exam cohort name match as expected."),
           p("The table below will reveal any discrepancies and the additional download will provide more details."),
-          # numericInput("b", "Number of rows to preview", value = 10, min = 1, step = 1),
           DTOutput("cohort_check_table")
         ),
         column(
           width = 12,
           br(),
-          br(),
-          br(),
           p("Download the full comparison for the exam cohort check:"),
-          br(),
           downloadButton(
             outputId = "cohort_check_download",
             label = "Exam cohort check",
@@ -71,17 +67,61 @@ data_checking_panel <- function() {
           )
         )
       ),
+      br(),
+      br(),
       gov_row(
         column(
           width = 6,
-          h2("Qualification identifier checks:"),
-          p("The qualification identifier is determined from the exam cohort code, qualification code, subject code and size."),
-          p("The following qualification identifiers found in the user data do not match the lookup."),
-          p("They will be updated to match the lookup value."),
-          numericInput("b", "Number of rows to preview", value = 20, min = 1, step = 1),
-          DTOutput("qual_id_check")
+          h2("2. Qualification check:"),
+          p("This check confirms the qualification code and qualification name match as expected."),
+          p("The table below will reveal any discrepancies and the additional download will provide more details."),
+          DTOutput("qualification_check_table")
+        ),
+        column(
+          width = 12,
+          br(),
+          p("Download the full comparison for the qualification check:"),
+          downloadButton(
+            outputId = "qualification_check_download",
+            label = "Qualification check",
+            icon = shiny::icon("download"),
+            class = "downloadButton"
+          )
         )
-      )
+      ),
+      br(),
+      br(),
+      gov_row(
+        column(
+          width = 6,
+          h2("3. Subject check:"),
+          p("This check confirms the subject code and subject name match as expected."),
+          p("The table below will reveal any discrepancies and the additional download will provide more details."),
+          DTOutput("subject_check_table")
+        ),
+        column(
+          width = 12,
+          br(),
+          p("Download the full comparison for the subject check:"),
+          downloadButton(
+            outputId = "subject_check_download",
+            label = "Subject check",
+            icon = shiny::icon("download"),
+            class = "downloadButton"
+          )
+        )
+      )#,
+      # gov_row(
+      #   column(
+      #     width = 6,
+      #     h2("Qualification identifier checks:"),
+      #     p("The qualification identifier is determined from the exam cohort code, qualification code, subject code and size."),
+      #     p("The following qualification identifiers found in the user data do not match the lookup."),
+      #     p("They will be updated to match the lookup value."),
+      #     numericInput("b", "Number of rows to preview", value = 20, min = 1, step = 1),
+      #     DTOutput("qual_id_check")
+      #   )
+      # )
     )
   )
 }

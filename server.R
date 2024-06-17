@@ -258,7 +258,7 @@ server <- function(input, output, session) {
   })
 
 
-  ## EXAM COHORT CHECKS
+  ## 1. EXAM COHORT CHECKS
   ## Does cohort name and cohort code match as expected?
 
   cohort_check_differences <- reactive({
@@ -311,10 +311,109 @@ server <- function(input, output, session) {
 
 
 
+  ## 2. QUALIFICATION CHECKS
+  ## Does qualification name and qualification code match as expected?
+  
+  qualification_check_differences <- reactive({
+    req(user_data_lookup_join())
+    
+    qualification_differences <- setdiff(
+      user_data() %>% select(unique_identifier, qualification_name, qualification_code),
+      user_data_lookup_join() %>% select(unique_identifier, qualification_name, qualification_code)
+    ) %>%
+      left_join(user_data_lookup_join() %>% select(unique_identifier, qualification_name, qualification_code),
+                by = "unique_identifier"
+      ) %>%
+      rename(
+        "User qualification name" = qualification_name.x,
+        "User qualification code" = qualification_code.x,
+        "Updated qualification name" = qualification_name.y,
+        "Updated qualification code" = qualification_code.y,
+      )
+  })
+  
+  qualification_check_summary <- reactive({
+    req(qualification_check_differences())
+    
+    qualification_differences_summary <- qualification_check_differences() %>%
+      select(-unique_identifier) %>%
+      count(pick(everything())) %>%
+      rename("Number of rows updated" = n)
+  })
+  
+  output$qualification_check_table <- renderDataTable({
+    datatable(
+      qualification_check_summary(),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE,
+        style = "bootstrap"
+      )
+    )
+  })
+  
+  output$qualification_check_download <- downloadHandler(
+    filename = "qualification_check.csv",
+    content = function(file) {
+      write.csv(qualification_check_differences(), file, row.names = FALSE)
+    }
+  )
+  
 
 
-
-
+  ## 3. SUBJECT CHECKS
+  ## Does subject name and subject code match as expected?
+  
+  subject_check_differences <- reactive({
+    req(user_data_lookup_join())
+    
+    subject_differences <- setdiff(
+      user_data() %>% select(unique_identifier, subject_name, subject_code),
+      user_data_lookup_join() %>% select(unique_identifier, subject_name, subject_code)
+    ) %>%
+      left_join(user_data_lookup_join() %>% select(unique_identifier, subject_name, subject_code),
+                by = "unique_identifier"
+      ) %>%
+      rename(
+        "User subject name" = subject_name.x,
+        "User subject code" = subject_code.x,
+        "Updated subject name" = subject_name.y,
+        "Updated subject code" = subject_code.y,
+      )
+  })
+  
+  subject_check_summary <- reactive({
+    req(subject_check_differences())
+    
+    subject_differences_summary <- subject_check_differences() %>%
+      select(-unique_identifier) %>%
+      count(pick(everything())) %>%
+      rename("Number of rows updated" = n)
+  })
+  
+  output$subject_check_table <- renderDataTable({
+    datatable(
+      subject_check_summary(),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE,
+        style = "bootstrap"
+      )
+    )
+  })
+  
+  output$qualification_check_download <- downloadHandler(
+    filename = "qualification_check.csv",
+    content = function(file) {
+      write.csv(qualification_check_differences(), file, row.names = FALSE)
+    }
+  )
 
 
 

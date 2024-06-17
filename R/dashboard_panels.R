@@ -56,6 +56,10 @@ data_checking_panel <- function() {
           DTOutput("cohort_check_table")
         ),
         column(
+          width = 6,
+          infoBoxOutput("cohort_infobox")
+        ),
+        column(
           width = 12,
           br(),
           p("Download the full comparison for the exam cohort check:"),
@@ -76,6 +80,10 @@ data_checking_panel <- function() {
           p("This check confirms the qualification code and qualification name match as expected."),
           p("The table below will reveal any discrepancies and the additional download will provide more details."),
           DTOutput("qualification_check_table")
+        ),
+        column(
+          width = 6,
+          infoBoxOutput("qualification_infobox")
         ),
         column(
           width = 12,
@@ -100,12 +108,42 @@ data_checking_panel <- function() {
           DTOutput("subject_check_table")
         ),
         column(
+          width = 6,
+          infoBoxOutput("subject_infobox")
+        ),
+        column(
           width = 12,
           br(),
           p("Download the full comparison for the subject check:"),
           downloadButton(
             outputId = "subject_check_download",
             label = "Subject check",
+            icon = shiny::icon("download"),
+            class = "downloadButton"
+          )
+        )
+      ),
+      br(),
+      br(),
+      gov_row(
+        column(
+          width = 6,
+          h2("4. Qualification ID check:"),
+          p("This check confirms the qualification ID (qual_id) has been derived correctly from the exam cohort, qualification, subject and size codes uploaded by the user."),
+          p("The table below will reveal any discrepancies and the additional download will provide more details."),
+          DTOutput("qualid_check_table")
+        ),
+        column(
+          width = 6,
+          infoBoxOutput("qualid_infobox")
+        ),
+        column(
+          width = 12,
+          br(),
+          p("Download the full comparison for the qualification ID check:"),
+          downloadButton(
+            outputId = "qualid_check_download",
+            label = "Qualification ID check",
             icon = shiny::icon("download"),
             class = "downloadButton"
           )

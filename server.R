@@ -238,7 +238,7 @@ server <- function(input, output, session) {
   # ---- User data - joining lookups ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
-  user_data_lookup_join <- reactive({
+  user_data_with_lookup <- reactive({
     req(user_data)
 
     joined_data <- user_data() %>%
@@ -262,20 +262,20 @@ server <- function(input, output, session) {
   ## Does cohort name and cohort code match as expected?
 
   cohort_check_differences <- reactive({
-    req(user_data_lookup_join())
+    req(user_data_with_lookup())
 
     cohort_differences <- setdiff(
       user_data() %>% select(unique_identifier, cohort_name, cohort_code),
-      user_data_lookup_join() %>% select(unique_identifier, cohort_name, cohort_code)
+      user_data_with_lookup() %>% select(unique_identifier, cohort_name, cohort_code)
     ) %>%
-      left_join(user_data_lookup_join() %>% select(unique_identifier, cohort_name, cohort_code),
+      left_join(user_data_with_lookup() %>% select(unique_identifier, cohort_name, cohort_code),
         by = "unique_identifier"
       ) %>%
       rename(
         "User cohort name" = cohort_name.x,
         "User cohort code" = cohort_code.x,
         "Updated cohort name" = cohort_name.y,
-        "Updated cohort code" = cohort_code.y,
+        "Updated cohort code" = cohort_code.y
       )
   })
 
@@ -296,8 +296,7 @@ server <- function(input, output, session) {
         scrollY = "250px",
         info = FALSE,
         pageLength = FALSE,
-        paging = FALSE,
-        style = "bootstrap"
+        paging = FALSE
       )
     )
   })
@@ -309,26 +308,38 @@ server <- function(input, output, session) {
     }
   )
 
+  output$cohort_infobox <- renderInfoBox({
+    colour <- "green"
+    infobox_text <- "No changes made to user data"
+    icon_symbol <- "check"
+    if (cohort_check_summary() %>% count() >= 1) {
+      colour <- "red"
+      infobox_text <- "Changes made to user data"
+      icon_symbol <- "exclamation"
+    }
+    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  })
+
 
 
   ## 2. QUALIFICATION CHECKS
   ## Does qualification name and qualification code match as expected?
 
   qualification_check_differences <- reactive({
-    req(user_data_lookup_join())
+    req(user_data_with_lookup())
 
     qualification_differences <- setdiff(
       user_data() %>% select(unique_identifier, qualification_name, qualification_code),
-      user_data_lookup_join() %>% select(unique_identifier, qualification_name, qualification_code)
+      user_data_with_lookup() %>% select(unique_identifier, qualification_name, qualification_code)
     ) %>%
-      left_join(user_data_lookup_join() %>% select(unique_identifier, qualification_name, qualification_code),
+      left_join(user_data_with_lookup() %>% select(unique_identifier, qualification_name, qualification_code),
         by = "unique_identifier"
       ) %>%
       rename(
         "User qualification name" = qualification_name.x,
         "User qualification code" = qualification_code.x,
         "Updated qualification name" = qualification_name.y,
-        "Updated qualification code" = qualification_code.y,
+        "Updated qualification code" = qualification_code.y
       )
   })
 
@@ -349,8 +360,7 @@ server <- function(input, output, session) {
         scrollY = "250px",
         info = FALSE,
         pageLength = FALSE,
-        paging = FALSE,
-        style = "bootstrap"
+        paging = FALSE
       )
     )
   })
@@ -362,26 +372,38 @@ server <- function(input, output, session) {
     }
   )
 
+  output$qualification_infobox <- renderInfoBox({
+    colour <- "green"
+    infobox_text <- "No changes made to user data"
+    icon_symbol <- "check"
+    if (qualification_check_summary() %>% count() >= 1) {
+      colour <- "red"
+      infobox_text <- "Changes made to user data"
+      icon_symbol <- "exclamation"
+    }
+    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  })
+
 
 
   ## 3. SUBJECT CHECKS
   ## Does subject name and subject code match as expected?
 
   subject_check_differences <- reactive({
-    req(user_data_lookup_join())
+    req(user_data_with_lookup())
 
     subject_differences <- setdiff(
       user_data() %>% select(unique_identifier, subject_name, subject_code),
-      user_data_lookup_join() %>% select(unique_identifier, subject_name, subject_code)
+      user_data_with_lookup() %>% select(unique_identifier, subject_name, subject_code)
     ) %>%
-      left_join(user_data_lookup_join() %>% select(unique_identifier, subject_name, subject_code),
+      left_join(user_data_with_lookup() %>% select(unique_identifier, subject_name, subject_code),
         by = "unique_identifier"
       ) %>%
       rename(
         "User subject name" = subject_name.x,
         "User subject code" = subject_code.x,
         "Updated subject name" = subject_name.y,
-        "Updated subject code" = subject_code.y,
+        "Updated subject code" = subject_code.y
       )
   })
 
@@ -402,45 +424,63 @@ server <- function(input, output, session) {
         scrollY = "250px",
         info = FALSE,
         pageLength = FALSE,
-        paging = FALSE,
-        style = "bootstrap"
+        paging = FALSE
       )
     )
   })
 
-  output$qualification_check_download <- downloadHandler(
-    filename = "qualification_check.csv",
+  output$subject_check_download <- downloadHandler(
+    filename = "subject_check.csv",
     content = function(file) {
-      write.csv(qualification_check_differences(), file, row.names = FALSE)
+      write.csv(subject_check_differences(), file, row.names = FALSE)
     }
   )
 
-
-
-
-
-
-  user_data_checks <- reactive({
-    req(user_data_lookup_join())
-
-    qual_id_difference <- setdiff(
-      user_data() %>% select(unique_identifier, qual_id),
-      user_data_lookup_join() %>% select(unique_identifier, qual_id)
-    ) %>%
-      left_join(user_data_lookup_join() %>% select(unique_identifier, qual_id),
-        by = "unique_identifier"
-      ) %>%
-      rename(
-        qual_id_user = qual_id.x,
-        qual_id_lookup = qual_id.y
-      )
+  output$subject_infobox <- renderInfoBox({
+    colour <- "green"
+    infobox_text <- "No changes made to user data"
+    icon_symbol <- "check"
+    if (subject_check_summary() %>% count() >= 1) {
+      colour <- "red"
+      infobox_text <- "Changes made to user data"
+      icon_symbol <- "exclamation"
+    }
+    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
 
 
 
-  output$qual_id_check <- renderDataTable({
+  ## 4. QUALID CHECKS
+  ## Does QUALID in user data match lookup as expected?
+
+  qualid_check_differences <- reactive({
+    req(user_data_with_lookup())
+
+    qualid_differences <- setdiff(
+      user_data() %>% select(unique_identifier, qual_id),
+      user_data_with_lookup() %>% select(unique_identifier, qual_id)
+    ) %>%
+      left_join(user_data_with_lookup() %>% select(unique_identifier, qual_id),
+        by = "unique_identifier"
+      ) %>%
+      rename(
+        "User qualification ID" = qual_id.x,
+        "Updated qualification ID" = qual_id.y
+      )
+  })
+
+  qualid_check_summary <- reactive({
+    req(qualid_check_differences())
+
+    qualid_differences_summary <- qualid_check_differences() %>%
+      select(-unique_identifier) %>%
+      count(pick(everything())) %>%
+      rename("Number of rows updated" = n)
+  })
+
+  output$qualid_check_table <- renderDataTable({
     datatable(
-      head(user_data_checks(), input$b),
+      qualid_check_summary(),
       options = list(
         scrollX = TRUE,
         scrollY = "250px",
@@ -450,6 +490,27 @@ server <- function(input, output, session) {
       )
     )
   })
+
+  output$qualid_check_download <- downloadHandler(
+    filename = "qualid_check.csv",
+    content = function(file) {
+      write.csv(qualid_check_differences(), file, row.names = FALSE)
+    }
+  )
+
+  output$qualid_infobox <- renderInfoBox({
+    colour <- "green"
+    infobox_text <- "No changes made to user data"
+    icon_symbol <- "check"
+    if (qualid_check_summary() %>% count() >= 1) {
+      colour <- "red"
+      infobox_text <- "Changes made to user data"
+      icon_symbol <- "exclamation"
+    }
+    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  })
+
+
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -463,9 +524,9 @@ server <- function(input, output, session) {
   ## 1.a. pivot the user data into long format
   ## 1.b calculate the difference between pupil prior attainment and each x band
   pupil_pava_bands <- reactive({
-    req(user_data())
+    req(user_data_with_lookup())
 
-    user_data() %>%
+    user_data_with_lookup() %>%
       select(-c(qualification_name, subject_name, cohort_name)) %>%
       left_join(data$national_bands, by = "qual_id") %>%
       pivot_longer(
@@ -669,7 +730,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_cohort",
         label = NULL,
-        choices <- user_data() %>%
+        choices <- user_data_with_lookup() %>%
           select(cohort_name) %>%
           distinct() %>%
           pull(cohort_name) %>%
@@ -680,7 +741,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_qualifications",
         label = NULL,
-        choices <- user_data() %>%
+        choices <- user_data_with_lookup() %>%
           select(cohort_name, qualification_name) %>%
           distinct() %>%
           filter(cohort_name == input$dropdown_cohort) %>%
@@ -692,7 +753,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_subjects",
         label = NULL,
-        choices <- user_data() %>%
+        choices <- user_data_with_lookup() %>%
           select(cohort_name, qualification_name, subject_name) %>%
           distinct() %>%
           filter(
@@ -707,7 +768,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_sizes",
         label = NULL,
-        choices <- user_data() %>%
+        choices <- user_data_with_lookup() %>%
           select(cohort_name, qualification_name, subject_name, size) %>%
           distinct() %>%
           filter(
@@ -790,7 +851,7 @@ server <- function(input, output, session) {
       mutate(source = "national") %>%
       select(-set)
 
-    user_chart_data <- user_data() %>%
+    user_chart_data <- user_data_with_lookup() %>%
       filter(qual_id == as.character(reactive_qualid())) %>%
       select(x = prior_attainment, y = actual_points) %>%
       mutate(source = "user")

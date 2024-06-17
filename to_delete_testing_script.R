@@ -50,6 +50,12 @@ test_data_lookup <- test_data %>%
   )
 
 
+
+
+
+
+
+
 ## check for different cohort names
 cohort_differences <- setdiff(test_data %>% select(unique_identifier, cohort_name, cohort_code), test_data_lookup %>% select(unique_identifier, cohort_name, cohort_code)) %>%
   left_join(test_data_lookup %>% select(unique_identifier, cohort_name, cohort_code),
@@ -71,7 +77,7 @@ cohort_differences_summary <- cohort_differences %>%
 
 ## check for different qualification names:
 
-
+cohort_differences_summary %>% count()
 
 
 
@@ -82,6 +88,21 @@ setdiff(test_data %>% select(unique_identifier, qual_id), test_data_lookup %>% s
   )
 
 
+
+## check for different qualids
+qualid_differences <- setdiff(test_data %>% select(unique_identifier, qual_id), test_data_lookup %>% select(unique_identifier, qual_id)) %>%
+  left_join(test_data_lookup %>% select(unique_identifier, qual_id),
+    by = "unique_identifier"
+  ) %>%
+  rename(
+    "User qualid" = qual_id.x,
+    "Updated qualid" = qual_id.y
+  )
+
+qual_id_differences_summary <- qualid_differences %>%
+  select(-unique_identifier) %>%
+  count(pick(everything())) %>%
+  rename("Number of rows updated" = n)
 
 
 

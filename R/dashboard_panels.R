@@ -110,7 +110,7 @@ data_checking_panel <- function() {
             class = "downloadButton"
           )
         )
-      )#,
+      ) # ,
       # gov_row(
       #   column(
       #     width = 6,

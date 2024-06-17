@@ -142,7 +142,7 @@ data$subject_variance <- data$subject_variance %>% mutate(
   qual_id = as.character(qual_id),
   qual_co_id = as.character(qual_co_id),
   sublevno = as.character(sublevno),
-  subject_code = as.character(subj),
+  subject_code = as.character(subject_code),
   exam_cohort = as.character(exam_cohort)
 )
 data$qualification_variance <- data$qualification_variance %>% mutate(
@@ -156,15 +156,16 @@ data$subject_chart <- data$subject_chart %>% mutate(
   qual_id = as.character(qual_id),
   exam_cohort = as.character(exam_cohort),
   sublevno = as.character(sublevno),
-  subject_code = as.character(subj)
-)
-data$qualid_lookup <- data$qualid_lookup %>% mutate(
-  qual_id = as.character(whole_qual_id),
-  qualification_code = as.character(qualification_code),
   subject_code = as.character(subject_code)
 )
+data$qualid_lookup <- data$qualid_lookup %>% mutate(
+  qual_id = as.character(qual_id),
+  qualification_code = as.character(qualification_code),
+  subject_code = as.character(subject_code),
+  size = as.character(size)
+)
 data$gnumber_lookup <- data$gnumber_lookup %>% mutate(
-  qual_id = as.character(qualification_id),
+  qual_id = as.character(qual_id),
   qualification_number = as.character(qualification_number),
   qualification_code = as.character(qualification_code),
   subject_code = as.character(subject_code)

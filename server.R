@@ -177,6 +177,15 @@ server <- function(input, output, session) {
   # ---- User data upload ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
+  expected_column_names <- c(
+    "unique_identifier", "forename", "surname", "gender", "forvus_id",
+    "cohort_code", "cohort_name",
+    "qualification_code", "qualification_name",
+    "subject_code", "subject_name", "size", "qual_id",
+    "prior_attainment", "actual_points", "disadvantaged_status"
+  )
+
+
   user_data <- reactive({
     req(input$upload)
 
@@ -187,17 +196,10 @@ server <- function(input, output, session) {
       need(ext == "csv", "Invalid file type; Please use the template .csv file")
     )
 
-    # 2. if validation test 1 passes, upload the data ready for column name checking
+    #  if validation test 1 passes, upload the data ready for column name checking
     pupil_data <- vroom::vroom(input$upload$datapath, delim = ",")
 
-    # 3. validation test 2: check column names
-    expected_column_names <- c(
-      "unique_identifier", "forename", "surname", "gender", "forvus_id",
-      "cohort_code", "cohort_name",
-      "qualification_code", "qualification_name",
-      "subject_code", "subject_name", "size", "qual_id",
-      "prior_attainment", "actual_points", "disadvantaged_status"
-    )
+    # 2. validation test 2: check column names
     actual_column_names <- colnames(pupil_data)
 
     validate(
@@ -210,6 +212,7 @@ server <- function(input, output, session) {
       qualification_code = as.character(qualification_code),
       subject_code = as.character(subject_code),
       qual_id = as.character(qual_id),
+      size = as.character(size),
       disadvantaged_status = as.integer(disadvantaged_status)
     )
 
@@ -219,7 +222,126 @@ server <- function(input, output, session) {
 
   output$input_preview <- renderDataTable({
     datatable(
-      head(user_data(), input$n),
+      head(user_data(), input$a),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE
+      )
+    )
+  })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- User data - joining lookups ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  user_data_lookup_join <- reactive({
+    req(user_data)
+
+    joined_data <- user_data() %>%
+      select(-c(qual_id, cohort_name, qualification_name, subject_name)) %>%
+      left_join(
+        data$qualid_lookup %>% select(
+          qual_id,
+          cohort_code, cohort_name,
+          qualification_code, qualification_name,
+          subject_code, subject_name,
+          size
+        ),
+        by = c("cohort_code", "qualification_code", "subject_code", "size")
+      )
+
+    return(joined_data)
+  })
+
+
+  ## EXAM COHORT CHECKS
+  ## Does cohort name and cohort code match as expected?
+
+  cohort_check_differences <- reactive({
+    req(user_data_lookup_join())
+
+    cohort_differences <- setdiff(
+      user_data() %>% select(unique_identifier, cohort_name, cohort_code),
+      user_data_lookup_join() %>% select(unique_identifier, cohort_name, cohort_code)
+    ) %>%
+      left_join(user_data_lookup_join() %>% select(unique_identifier, cohort_name, cohort_code),
+        by = "unique_identifier"
+      ) %>%
+      rename(
+        "User cohort name" = cohort_name.x,
+        "User cohort code" = cohort_code.x,
+        "Updated cohort name" = cohort_name.y,
+        "Updated cohort code" = cohort_code.y,
+      )
+  })
+
+  cohort_check_summary <- reactive({
+    req(cohort_check_differences())
+
+    cohort_differences_summary <- cohort_check_differences() %>%
+      select(-unique_identifier) %>%
+      count(pick(everything())) %>%
+      rename("Number of rows updated" = n)
+  })
+
+  output$cohort_check_table <- renderDataTable({
+    datatable(
+      cohort_check_summary(),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE,
+        style = "bootstrap"
+      )
+    )
+  })
+
+  output$cohort_check_download <- downloadHandler(
+    filename = "exam_cohort_check.csv",
+    content = function(file) {
+      write.csv(cohort_check_differences(), file, row.names = FALSE)
+    }
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+  user_data_checks <- reactive({
+    req(user_data_lookup_join())
+
+    qual_id_difference <- setdiff(
+      user_data() %>% select(unique_identifier, qual_id),
+      user_data_lookup_join() %>% select(unique_identifier, qual_id)
+    ) %>%
+      left_join(user_data_lookup_join() %>% select(unique_identifier, qual_id),
+        by = "unique_identifier"
+      ) %>%
+      rename(
+        qual_id_user = qual_id.x,
+        qual_id_lookup = qual_id.y
+      )
+  })
+
+
+
+  output$qual_id_check <- renderDataTable({
+    datatable(
+      head(user_data_checks(), input$b),
       options = list(
         scrollX = TRUE,
         scrollY = "250px",
@@ -256,6 +378,7 @@ server <- function(input, output, session) {
       mutate(difference_prior_x = prior_attainment - x)
   })
 
+
   ## 1.c. identify which band has the smallest positive difference and set to TRUE
   ## 1.d. in some instances there may be multiple lower bands (all with the same value) so we want to select the highest possible band to be lower_band
   ## 1.e. we can then define upper_band to be lower_band plus 1
@@ -263,14 +386,15 @@ server <- function(input, output, session) {
     req(pupil_pava_bands())
 
     pupil_pava_bands() %>%
-      group_by(forvus_id, qual_id) %>%
+      group_by(unique_identifier) %>%
       mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
       filter(smallest_positive_difference == TRUE) %>%
       slice_max(band) %>%
-      select(forvus_id, qual_id, lower_band = band) %>%
+      select(unique_identifier, lower_band = band) %>%
       mutate(upper_band = as.character(as.numeric(lower_band) + 1)) %>%
       ungroup()
   })
+
 
   ## 1.f. join the two tables and filter band to only include lower and upper band values
   ## 1.g. this should leave two rows per pupil, with the lower and upper x and y values from the pava
@@ -278,16 +402,95 @@ server <- function(input, output, session) {
     req(pupil_pava_bands_flags())
 
     pupil_pava_bands() %>%
-      inner_join(pupil_pava_bands_flags(), by = c("forvus_id", "qual_id")) %>%
+      inner_join(pupil_pava_bands_flags(), by = "unique_identifier") %>%
       filter(band == lower_band | band == upper_band) %>%
-      arrange(forvus_id, qual_id)
+      mutate(band = as.numeric(band)) %>%
+      arrange(unique_identifier, band)
   })
+
+
+  ## calculating estimated points and value added for each pupil
+  pupil_va <- reactive({
+    req(pupil_pava_bands_filtered())
+
+    pupil_pava_bands_filtered() %>%
+      group_by(unique_identifier) %>%
+      mutate(numbering = row_number()) %>%
+      mutate(band_position = case_when(
+        numbering == 1 ~ "lower",
+        numbering == 2 ~ "upper",
+        TRUE ~ "error"
+      )) %>%
+      select(-c(band, numbering)) %>%
+      pivot_wider(
+        names_from = band_position,
+        values_from = c(x, y, difference_prior_x)
+      ) %>%
+      ungroup() %>%
+      mutate(
+        delta_x = x_upper - x_lower,
+        delta_y = y_upper - y_lower,
+        estimated_points = (delta_y / delta_x) * (prior_attainment - x_lower) + y_lower,
+        value_added = actual_points - estimated_points
+      ) %>%
+      select(all_of(expected_column_names), estimated_points, value_added) %>%
+      left_join(data$subject_variance %>% select(qual_id, subj_weighting, weighting), by = "qual_id") %>%
+      mutate(
+        value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
+        value_added_qual_weight = value_added * (weighting / as.numeric(size))
+      )
+  })
+
+
+
+  ## calculating value added and confidence intervals for each qualification/subject combination (each qual_id)
+  subject_va <- reactive({
+    req(pupil_va())
+
+    pupil_va() %>%
+      group_by(
+        cohort_code, cohort_name, qualification_code, qualification_name,
+        subject_code, subject_name, size, qual_id
+      ) %>%
+      summarise(
+        student_count = n(),
+        subject_va_pt1 = mean(value_added)
+      ) %>%
+      left_join(data$subject_variance %>% select(qual_id, sd_suqu), by = "qual_id") %>%
+      mutate(
+        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
+        standard_error = sd_suqu / sqrt(student_count),
+        lower_confidence_interval = subject_va_grade - (1.96 * standard_error),
+        upper_confidence_interval = subject_va_grade + (1.96 * standard_error)
+      ) %>%
+      ungroup()
+  })
+
+
+
+
+
+
+
+
 
 
 
   output$student_va_scores <- renderDataTable({
     datatable(
-      head(pupil_pava_bands_filtered(), input$n),
+      head(
+        pupil_va() %>%
+          select(
+            forename, surname, cohort_name, qualification_name, subject_name, size, qual_id,
+            prior_attainment, actual_points, estimated_points, value_added
+          ) %>%
+          mutate(
+            prior_attainment = round2(prior_attainment, 4),
+            estimated_points = round2(estimated_points, 4),
+            value_added = round2(value_added, 4)
+          ),
+        input$n
+      ),
       options = list(
         scrollX = TRUE,
         scrollY = "250px",
@@ -537,8 +740,37 @@ server <- function(input, output, session) {
 
 
 
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- SUBJECT CHART VA DATA ----
+  # -----------------------------------------------------------------------------------------------------------------------------
 
 
+
+  ## extract the relevant national data for the subject comparison chart based on the reactive qual_id
+  number_of_entries <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- subject_va() %>%
+      filter(qual_id == as.character(reactive_qualid())) %>%
+      select(student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+
+  output$entries <- renderValueBox({
+    # Put value into box to plug into app
+    valueBox(
+      # take input number
+      paste0(number_of_entries()),
+      # add subtitle to explain what it's showing
+      paste0("Number of pupils"),
+      color = "blue"
+    )
+  })
 
 
 

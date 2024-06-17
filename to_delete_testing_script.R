@@ -24,21 +24,83 @@ if (interactive()) {
 
 
 
-test_data <- read.delim("clipboard")
+test_data <- read.csv("//lonnetapp01/16-18ValueAdded/L3VA development/KT_L3VA/shadow_user_test.csv")
 
 test_data <- test_data %>%
-  mutate(qual_id = as.character(qual_id))
+  mutate(
+    qual_id = as.character(qual_id),
+    qualification_code = as.character(qualification_code),
+    subject_code = as.character(subject_code),
+    size = as.character(size)
+  )
+
+
+
+test_data_lookup <- test_data %>%
+  select(-c(qual_id, cohort_name, qualification_name, subject_name)) %>%
+  left_join(
+    data$qualid_lookup %>% select(
+      qual_id,
+      cohort_code, cohort_name,
+      qualification_code, qualification_name,
+      subject_code, subject_name,
+      size
+    ),
+    by = c("cohort_code", "qualification_code", "subject_code", "size")
+  )
+
+
+## check for different cohort names
+cohort_differences <- setdiff(test_data %>% select(unique_identifier, cohort_name, cohort_code), test_data_lookup %>% select(unique_identifier, cohort_name, cohort_code)) %>%
+  left_join(test_data_lookup %>% select(unique_identifier, cohort_name, cohort_code),
+    by = "unique_identifier"
+  ) %>%
+  rename(
+    "User cohort name" = cohort_name.x,
+    "User cohort code" = cohort_code.x,
+    "Updated cohort name" = cohort_name.y,
+    "Updated cohort code" = cohort_code.y,
+  )
+
+cohort_differences_summary <- cohort_differences %>%
+  select(-unique_identifier) %>%
+  count(pick(everything())) %>%
+  rename("Number of rows updated" = n)
+
+
+
+## check for different qualification names:
+
+
+
+
+
+## check for different qual_id
+setdiff(test_data %>% select(unique_identifier, qual_id), test_data_lookup %>% select(unique_identifier, qual_id)) %>%
+  left_join(test_data_lookup %>% select(unique_identifier, qual_id),
+    by = "unique_identifier"
+  )
+
+
+
+
+
+# %>%
+rename_with(., ~ paste0(.x, "_user"), ends_with(".x"))
+
+
+
+rename_with(iris, toupper, starts_with("Petal"))
+
+
+
 
 # join on pava bands
 
 
-minpositive <- function(x) min(x[x >= 0])
-
-
-
-
-
 ### good version
+
+minpositive <- function(x) min(x[x >= 0])
 
 pupil_pava_bands <- test_data %>%
   select(-c(qualification_name, subject_name, cohort_name)) %>%
@@ -69,6 +131,42 @@ pupil_pava_bands_filtered <- pupil_pava_bands %>%
   mutate(band = as.numeric(band)) %>%
   arrange(unique_identifier, band)
 
+
+
+
+
+
+pupil_pava_bands_filtered1 <- pupil_pava_bands
+
+
+pupil_pava_bands_filtered2 <- pupil_pava_bands %>%
+  inner_join(pupil_pava_bands_flags, by = "unique_identifier")
+
+
+pupil_pava_bands_filtered3 <- pupil_pava_bands %>%
+  left_join(pupil_pava_bands_flags, by = "unique_identifier")
+
+
+differences <- setdiff(pupil_pava_bands_filtered3, pupil_pava_bands_filtered2) %>%
+  select(qual_id) %>%
+  distinct()
+
+options(scipen = 999)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pupil_pava_bands %>% distinct(unique_identifier)
 
 
 expected_column_names <- c(
@@ -122,11 +220,15 @@ subject_va <- pupil_va %>%
     standard_error = sd_suqu / sqrt(student_count),
     lower_confidence_interval = subject_va_grade - (1.96 * standard_error),
     upper_confidence_interval = subject_va_grade + (1.96 * standard_error)
-  )
+  ) %>%
+  ungroup()
 
 
 
-
+subject_va %>%
+  filter(qual_id == "1111110101") %>%
+  select(student_count) %>%
+  pull()
 
 
 
@@ -134,10 +236,16 @@ subject_va <- pupil_va %>%
 pupil_pava_bands_filtered_wide %>% filter(band_position == "error")
 
 
+dog <- "The quick brown dog"
+str_to_upper(dog)
+str_to_lower(dog)
+str_to_title(dog)
+str_to_sentence("the quick brown dog")
 
 
-
-
+data$qualid_lookup %>%
+  select(cohort_name) %>%
+  distinct()
 
 
 

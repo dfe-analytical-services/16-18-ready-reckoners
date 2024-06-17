@@ -16,13 +16,76 @@ data_upload_panel <- function() {
           width = 12,
           p("Please upload a .csv file containing the pupil level data for use in the 2019 Ready Reckoner"),
           fileInput("upload", NULL, buttonLabel = "Browse", accept = c(".csv")),
-          numericInput("n", "Number of rows to preview", value = 5, min = 1, step = 1),
+          br(),
+          h2("User data preview:"),
+          numericInput("a", "Number of rows to preview", value = 5, min = 1, step = 1),
           DTOutput("input_preview")
+        )
+      ),
+      br(),
+      br()
+    )
+  )
+}
+
+
+data_checking_panel <- function() {
+  tabPanel(
+    value = "dashboard",
+    "Data checks",
+    gov_main_layout(
+      gov_row(
+        column(
+          width = 12,
+          h1("Student data checking"),
+          p("Please use this tab to review your uploaded data, and make note of any changes that have been applied by this app."),
+          br(),
+          p("A series of test have been run to check the exam cohort, qualification and subject names and codes match the lookup."),
+          p("The tables below will highlight where the uploaded data has been altered due to discrepancies."),
+          p("If the correction applied is incorrect, please review your csv and re-upload the data with the appropriate corrections applied."),
+        )
+      ),
+      br(),
+      br(),
+      gov_row(
+        column(
+          width = 6,
+          h2("1. Exam cohort check:"),
+          p("This check confirms the exam cohort code and exam cohort name match as expected."),
+          p("The table below will reveal any discrepancies and the additional download will provide more details."),
+          # numericInput("b", "Number of rows to preview", value = 10, min = 1, step = 1),
+          DTOutput("cohort_check_table")
+        ),
+        column(
+          width = 12,
+          br(),
+          br(),
+          br(),
+          p("Download the full comparison for the exam cohort check:"),
+          br(),
+          downloadButton(
+            outputId = "cohort_check_download",
+            label = "Exam cohort check",
+            icon = shiny::icon("download"),
+            class = "downloadButton"
+          )
+        )
+      ),
+      gov_row(
+        column(
+          width = 6,
+          h2("Qualification identifier checks:"),
+          p("The qualification identifier is determined from the exam cohort code, qualification code, subject code and size."),
+          p("The following qualification identifiers found in the user data do not match the lookup."),
+          p("They will be updated to match the lookup value."),
+          numericInput("b", "Number of rows to preview", value = 20, min = 1, step = 1),
+          DTOutput("qual_id_check")
         )
       )
     )
   )
 }
+
 
 student_va_panel <- function() {
   tabPanel(
@@ -38,6 +101,7 @@ student_va_panel <- function() {
       gov_row(
         column(
           width = 12,
+          numericInput("n", "Number of rows to preview", value = 5, min = 1, step = 1),
           DTOutput("student_va_scores")
         )
       )
@@ -49,7 +113,7 @@ student_va_panel <- function() {
 national_chart_panel <- function() {
   tabPanel(
     value = "dashboard",
-    "National Comparison",
+    "National comparison",
     gov_main_layout(
       gov_row(
         column(
@@ -118,6 +182,15 @@ national_chart_panel <- function() {
               br(),
               br(),
               plotOutput("subject_chart", height = "15cm") %>% withSpinner(color = "#1d70b8"),
+              br(),
+              br()
+            ),
+            column(
+              width = 2,
+              br(),
+              br(),
+              valueBoxOutput("entries", width = NULL),
+              # valueBoxOutput("entries", width = 2),
               br(),
               br()
             )

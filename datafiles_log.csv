@@ -1,7 +1,6 @@
 filename,status
-data/la_maintained_schools_revenue_reserve_final.csv,published
-data/date_format.csv,published
-data/date_format.meta.csv,published
-data/some_unpublished_data.csv,unpublished
-data/2019_l3va_step5_outputs.xlsx,published
 data/2019_shadow_l3va_step5_outputs.xlsx,unpublished
+data/2019_shadow_l3va_step5_outputs_Rversion.xlsx,unpublished
+data/2019A_l3va_step5_outputs_Rversion.xlsx,unpublished
+data/2023U_l3va_step5_outputs_Rversion.xlsx,unpublished
+data/pupil_upload_template.csv,published

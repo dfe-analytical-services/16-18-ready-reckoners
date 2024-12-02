@@ -626,16 +626,6 @@ server <- function(input, output, session) {
       ungroup()
   })
 
-
-
-
-
-
-
-
-
-
-
   output$student_va_scores <- renderDataTable({
     datatable(
       head(
@@ -660,8 +650,6 @@ server <- function(input, output, session) {
       )
     )
   })
-
-
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -932,17 +920,6 @@ server <- function(input, output, session) {
     )
   })
 
-
-
-
-
-
-
-
-
-
-
-
   # reactiveRevBal <- reactive({
   #   dfRevBal %>% filter(
   #     area_name == input$selectArea | area_name == "England",
@@ -1189,7 +1166,6 @@ server <- function(input, output, session) {
   # output$dropdown_label <- renderText({
   #   paste0("Current selections: ", input$selectPhase, ", ", input$selectArea)
   # })
-
 
   # Stop app -------------------------------------------------------------------
 

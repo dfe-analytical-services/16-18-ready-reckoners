@@ -86,7 +86,8 @@ appLoadingCSS <- "
 }
 "
 
-site_title <- "DfE Shiny Template"
+site_title <- "16-18 Ready Reckoner"
+# the following two links are for the template. can update to ours if they are needed/set up. will need to uncomment out the beta banner code in the ui script
 site_primary <- "https://department-for-education.shinyapps.io/dfe-shiny-template/"
 site_overflow <- "https://department-for-education.shinyapps.io/dfe-shiny-template-overflow/"
 # We can add further mirrors where necessary. Each one can generally handle

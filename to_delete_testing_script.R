@@ -251,9 +251,6 @@ subject_va %>%
   select(student_count) %>%
   pull()
 
-
-
-
 pupil_pava_bands_filtered_wide %>% filter(band_position == "error")
 
 
@@ -307,21 +304,6 @@ join_columns <- with_pava_lower[, !names(with_pava_lower) %in% c("band", "x", "y
 
 combined <- with_pava_lower %>%
   full_join(with_pava_upper, by = join_columns)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 pivot_longer(

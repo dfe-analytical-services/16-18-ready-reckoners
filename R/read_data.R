@@ -16,14 +16,29 @@
 ## function to read in a workbook with multiple sheets
 func_read_multiplesheets <- function(workbook) {
   # get the sheet names from within the workbook
-  sheets <- excel_sheets(workbook)
+  sheet_names <- excel_sheets(workbook)
   # read in each of the sheets from the workbook
-  tibble <- lapply(sheets, function(x) read_excel(workbook, sheet = x))
+  tibble <- lapply(sheet_names, function(x) read_excel(workbook, sheet = x))
   data_frame <- lapply(tibble, as.data.frame)
 
   # assigning names to data frames
-  names(data_frame) <- sheets
+  names(data_frame) <- sheet_names
 
   # print data frame
   print(data_frame)
 }
+
+
+# func_read_multiplesheets <- function(workbook) {
+#   # get the sheet names from within the workbook
+#   sheet_names <- getSheetNames(workbook)
+#   # read in each of the sheets from the workbook
+#   data_frame <- lapply(sheet_names, function(sheet) {
+#     read.xlsx(workbook, sheet = sheet)
+#   })
+#
+#   # assigning names to data frames
+#   names(data_frame) <- sheet_names
+#
+#   print(data_frame)
+# }

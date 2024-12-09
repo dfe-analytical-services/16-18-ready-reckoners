@@ -140,7 +140,7 @@ pupil_pava_bands_flags <- pupil_pava_bands %>%
   group_by(unique_identifier) %>%
   mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
   filter(smallest_positive_difference == TRUE) %>%
-  slice_max(band) %>%
+  slice_max(as.numeric(band)) %>%
   select(unique_identifier, lower_band = band) %>%
   mutate(upper_band = as.character(as.numeric(lower_band) + 1)) %>%
   ungroup()
@@ -244,8 +244,6 @@ subject_va <- pupil_va %>%
   ) %>%
   ungroup()
 
-
-
 subject_va %>%
   filter(qual_id == "1111110101") %>%
   select(student_count) %>%
@@ -265,7 +263,31 @@ data$qualid_lookup %>%
   select(cohort_name) %>%
   distinct()
 
-
+qualification_va_disadvantaged <- pupil_va_disadvantaged %>%
+  group_by(qual_co_id, cohort_code, cohort_name, qualification_code, qualification_name, size) %>%
+  summarise(
+    qual_student_count = n(),
+    qual_va_numerator = sum(value_added_qual_weight, na.rm = TRUE),
+    qual_va_denominator = sum(weighting, na.rm = TRUE)
+  ) %>%
+  group_by(
+    qual_co_id, cohort_code, cohort_name, qualification_code, qualification_name, size,
+    qual_student_count, qual_va_numerator, qual_va_denominator
+  ) %>%
+  left_join(
+    subject_va_disadvantaged %>%
+      select(qual_co_id, student_count_subj, subject_standard_error),
+    by = "qual_co_id"
+  ) %>%
+  mutate(qual_standard_error_pt1 = (subject_standard_error * student_count_subj / qual_student_count)^2) %>%
+  summarise(qual_standard_error_pt2 = sum(qual_standard_error_pt1, na.rm = TRUE)) %>%
+  mutate(
+    qual_va_grade = qual_va_numerator / qual_va_denominator / 10,
+    qual_standard_error = sqrt(qual_standard_error_pt2),
+    lower_confidence_interval = qual_va_grade - (1.96 * qual_standard_error),
+    upper_confidence_interval = qual_va_grade + (1.96 * qual_standard_error)
+  ) %>%
+  ungroup()
 
 
 with_pava_lower <- test_data %>%
@@ -313,9 +335,6 @@ pivot_longer(
   values_to = "x_value",
   values_drop_na = TRUE
 )
-
-
-
 
 billboard
 billboard %>%

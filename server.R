@@ -239,9 +239,9 @@ server <- function(input, output, session) {
   # -----------------------------------------------------------------------------------------------------------------------------
 
   user_data_with_lookup <- reactive({
-    req(user_data)
+    req(user_data())
 
-    joined_data <- user_data() %>%
+    joined_data <- user_data_academic() %>%
       select(-c(qual_id, cohort_name, qualification_name, subject_name)) %>%
       left_join(
         data$qualid_lookup %>% select(
@@ -265,7 +265,7 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     cohort_differences <- setdiff(
-      user_data() %>% select(unique_identifier, cohort_name, cohort_code),
+      user_data_academic() %>% select(unique_identifier, cohort_name, cohort_code),
       user_data_with_lookup() %>% select(unique_identifier, cohort_name, cohort_code)
     ) %>%
       left_join(user_data_with_lookup() %>% select(unique_identifier, cohort_name, cohort_code),
@@ -329,7 +329,7 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     qualification_differences <- setdiff(
-      user_data() %>% select(unique_identifier, qualification_name, qualification_code),
+      user_data_academic() %>% select(unique_identifier, qualification_name, qualification_code),
       user_data_with_lookup() %>% select(unique_identifier, qualification_name, qualification_code)
     ) %>%
       left_join(user_data_with_lookup() %>% select(unique_identifier, qualification_name, qualification_code),
@@ -393,7 +393,7 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     subject_differences <- setdiff(
-      user_data() %>% select(unique_identifier, subject_name, subject_code),
+      user_data_academic() %>% select(unique_identifier, subject_name, subject_code),
       user_data_with_lookup() %>% select(unique_identifier, subject_name, subject_code)
     ) %>%
       left_join(user_data_with_lookup() %>% select(unique_identifier, subject_name, subject_code),
@@ -457,7 +457,7 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     qualid_differences <- setdiff(
-      user_data() %>% select(unique_identifier, qual_id),
+      user_data_academic() %>% select(unique_identifier, qual_id),
       user_data_with_lookup() %>% select(unique_identifier, qual_id)
     ) %>%
       left_join(user_data_with_lookup() %>% select(unique_identifier, qual_id),
@@ -512,7 +512,6 @@ server <- function(input, output, session) {
 
 
 
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- User data - pupil value added ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -549,7 +548,7 @@ server <- function(input, output, session) {
       group_by(unique_identifier) %>%
       mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
       filter(smallest_positive_difference == TRUE) %>%
-      slice_max(band) %>%
+      slice_max(as.numeric(band)) %>%
       select(unique_identifier, lower_band = band) %>%
       mutate(upper_band = as.character(as.numeric(lower_band) + 1)) %>%
       ungroup()
@@ -635,9 +634,9 @@ server <- function(input, output, session) {
             prior_attainment, actual_points, estimated_points, value_added
           ) %>%
           mutate(
-            prior_attainment = round2(prior_attainment, 4),
-            estimated_points = round2(estimated_points, 4),
-            value_added = round2(value_added, 4)
+            prior_attainment = round2(prior_attainment, 2),
+            estimated_points = round2(estimated_points, 2),
+            value_added = round2(value_added, 2)
           ),
         input$n
       ),

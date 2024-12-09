@@ -33,6 +33,7 @@ shhh(library(bslib))
 shhh(library(dfeshiny))
 shhh(library(ggiraph))
 shhh(library(readxl))
+# shhh(library(openxlsx))
 shhh(library(snakecase))
 shhh(library(tidyr))
 shhh(library(shinycssloaders))
@@ -176,15 +177,6 @@ data$disadvantaged_variance <- data$disadvantaged_variance %>% mutate(
   exam_cohort = as.character(exam_cohort),
   sublevno = as.character(sublevno)
 )
-
-
-
-
-
-
-
-
-
 
 expandable <- function(inputId, label, contents) {
   govDetails <- shiny::tags$details(

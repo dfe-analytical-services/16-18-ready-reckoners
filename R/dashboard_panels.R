@@ -2,7 +2,7 @@
 
 data_upload_panel <- function() {
   tabPanel(
-    value = "dashboard",
+    value = "data_upload_dashboard",
     "Data upload",
     gov_main_layout(
       gov_row(
@@ -31,7 +31,7 @@ data_upload_panel <- function() {
 
 data_checking_panel <- function() {
   tabPanel(
-    value = "dashboard",
+    value = "data_check_dashboard",
     "Data checks",
     gov_main_layout(
       gov_row(

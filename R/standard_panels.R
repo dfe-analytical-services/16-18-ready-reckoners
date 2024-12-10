@@ -6,7 +6,7 @@ a11y_panel <- function() {
         column(
           width = 12,
           h1("Accessibility statement"),
-          br("This accessibility statement applies to the **application name**.
+          br("This accessibility statement applies to the 16-18 Ready Reckoner.
             This application is run by the Department for Education. We want as
             many people as possible to be able to use this application, and have
             actively developed this application with accessibilty in mind."),
@@ -55,7 +55,7 @@ a11y_panel <- function() {
           br(
             "If you have any feedback on how we could further improve the
             accessibility of this application, please contact us at",
-            a(href = "mailto:email@education.gov.uk", "email@education.gov.uk")
+            a(href = "mailto:Attainment.STATISTICS@education.gov.uk", "Attainment.STATISTICS@education.gov.uk")
           )
         )
       )

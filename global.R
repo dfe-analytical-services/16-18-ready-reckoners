@@ -90,15 +90,18 @@ appLoadingCSS <- "
 site_title <- "16-18 Ready Reckoner"
 # the following two links are for the template. can update to ours if they are needed/set up. will need to uncomment out the beta banner code in the ui script
 site_primary <- "https://department-for-education.shinyapps.io/dfe-shiny-template/"
-site_overflow <- "https://department-for-education.shinyapps.io/dfe-shiny-template-overflow/"
+# site_overflow <- "https://department-for-education.shinyapps.io/dfe-shiny-template-overflow/"
+
 # We can add further mirrors where necessary. Each one can generally handle
 # about 2,500 users simultaneously
-sites_list <- c(site_primary, site_overflow)
+sites_list <- c(site_primary)
+# sites_list <- c(site_primary, site_overflow)
+
 # Update this with your parent
 # publication name (e.g. the EES publication)
-ees_pub_name <- "Statistical publication"
+ees_pub_name <- "A level and other 16 to 18 results"
 # Update with parent publication link
-ees_publication <- "https://explore-education-statistics.service.gov.uk/find-statistics/"
+ees_publication <- "https://explore-education-statistics.service.gov.uk/find-statistics/a-level-and-other-16-to-18-results"
 google_analytics_key <- "Z967JJVQQX"
 
 

@@ -24,8 +24,8 @@ func_read_multiplesheets <- function(workbook) {
   # assigning names to data frames
   names(data_frame) <- sheet_names
 
-  # print data frame
-  print(data_frame)
+  # print(data_frame)
+  return(data_frame)
 }
 
 

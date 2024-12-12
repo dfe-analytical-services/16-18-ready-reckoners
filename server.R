@@ -173,12 +173,18 @@ server <- function(input, output, session) {
 
   #  output$cookie_status <- renderText(as.character(input$cookies))
 
+
+  observeEvent(input$link_to_user_upload_tab, {
+    updateTabsetPanel(session, "navlistPanel", selected = "data_upload_dashboard")
+  })
+
+
   # -----------------------------------------------------------------------------------------------------------------------------
-  # ---- User data upload ----
+  # ---- USER DATA UPLOAD - OUTPUT IN THE DATA UPLOAD TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
   expected_column_names <- c(
-    "unique_identifier", "forename", "surname", "gender", "forvus_id",
+    "unique_identifier", "forename", "surname", "gender",
     "cohort_code", "cohort_name",
     "qualification_code", "qualification_name",
     "subject_code", "subject_name", "size", "qual_id",
@@ -197,18 +203,35 @@ server <- function(input, output, session) {
     )
 
     #  if validation test 1 passes, upload the data ready for column name checking
-    pupil_data <- vroom::vroom(input$upload$datapath, delim = ",")
+    student_data <- vroom::vroom(input$upload$datapath, delim = ",")
 
     # 2. validation test 2: check column names
-    actual_column_names <- colnames(pupil_data)
+    actual_column_names <- colnames(student_data)
 
     validate(
       need(identical(expected_column_names, actual_column_names), "Invalid column name detected or column missing; Please use the template to upload pupil data")
     )
 
-    # 4. if validation test 2 fails the code will exit, but if it passes the code will continue to return the pupil data
-    pupil_data <- pupil_data %>% mutate(
-      forvus_id = as.character(forvus_id),
+
+    # 3. validation test 3: check numerical unique identifiers
+    unique_identifier_type_check <- student_data %>%
+      mutate(unique_identifier = as.numeric(unique_identifier)) %>%
+      filter(is.na(unique_identifier))
+
+    validate(
+      need(nrow(unique_identifier_type_check) == 0, "Non-numerical unique identifiers detected in pupil data. Please ammend the unique identifiers used to only include numerical values and re-upload.")
+    )
+
+    # 4. validation test 4: check unique identifiers are unique
+    unique_identifier_value_check <- student_data %>% distinct(unique_identifier)
+
+    validate(
+      need(nrow(student_data) == nrow(unique_identifier_value_check), "Duplicate unique identifiers detected in pupil data. Please ammend the unique identifiers used to only include unique numerical values and re-upload.")
+    )
+
+
+    # 5. if validation test 2 or 3 fails the code will exit, but if they pass the code will continue to return the pupil data
+    student_data <- student_data %>% mutate(
       qualification_code = as.character(qualification_code),
       subject_code = as.character(subject_code),
       qual_id = as.character(qual_id),
@@ -216,7 +239,7 @@ server <- function(input, output, session) {
       disadvantaged_status = as.integer(disadvantaged_status)
     )
 
-    return(pupil_data)
+    return(student_data)
   })
 
 
@@ -236,7 +259,110 @@ server <- function(input, output, session) {
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
-  # ---- User data - joining lookups ----
+  # ---- USER TEMPLATES - OUTPUT IN THE DATA UPLOAD TAB ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  output$student_data_template_download <- downloadHandler(
+    filename = "student_data_template.csv",
+    content = function(file) {
+      write.csv(template_data, file, row.names = FALSE)
+    }
+  )
+
+  output$user_lookup_download <- downloadHandler(
+    filename = "qualification_lookup.csv",
+    content = function(file) {
+      write.csv(data$qualid_lookup, file, row.names = FALSE)
+    }
+  )
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- USER "DATA MISSING" MESSAGES ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  ## for use in the data checking tab (displayed at top)
+  missing_upload_message1 <- reactive({
+    if (is.null(input$upload)) {
+      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+    }
+  })
+
+  output$no_user_data1 <- renderText({
+    missing_upload_message1()
+  })
+
+
+
+
+  ## for use in the student value added table tab (displayed at top)
+  missing_upload_message2 <- reactive({
+    if (is.null(input$upload)) {
+      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+    } else {
+      text <- paste("Download your institution data with individual value added scores calculated for each student:")
+    }
+  })
+
+  output$no_user_data2 <- renderText({
+    missing_upload_message2()
+  })
+
+
+  ## for use in the subject chart tab (to replace table when national and student data radio button is selected)
+  missing_upload_message3 <- reactive({
+    if (is.null(input$upload) & input$data_source == "National and student data") {
+      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+    }
+  })
+
+  output$no_user_data3 <- renderText({
+    missing_upload_message3()
+  })
+
+
+  ## for use in the cohort value added tab (displayed at top)
+  missing_upload_message4 <- reactive({
+    if (is.null(input$upload)) {
+      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+    } else {
+      text <- paste("Download your institution data with headline value added scores calculated:")
+    }
+  })
+
+  output$no_user_data4 <- renderText({
+    missing_upload_message4()
+  })
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- USER DATA CREATING ACADEMIC ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  user_data_max_unique_id <- reactive({
+    req(user_data())
+
+    user_data() %>%
+      select(unique_identifier) %>%
+      max()
+  })
+
+
+  user_data_academic <- reactive({
+    req(user_data())
+
+    user_data() %>%
+      filter(cohort_code == 1) %>%
+      mutate(
+        cohort_code = 2,
+        cohort_name = "Academic",
+        qual_id = paste0(cohort_code, substr(qual_id, 2, nchar(qual_id))),
+        unique_identifier = row_number() + user_data_max_unique_id()
+      ) %>%
+      bind_rows(user_data())
+  })
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- USER DATA JOINING LOOKUPS ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
   user_data_with_lookup <- reactive({
@@ -253,13 +379,80 @@ server <- function(input, output, session) {
           size
         ),
         by = c("cohort_code", "qualification_code", "subject_code", "size")
-      )
+      ) %>%
+      mutate(across(c(qual_id, cohort_name, qualification_name, subject_name), ~ replace_na(., "Removed")))
 
     return(joined_data)
   })
 
 
-  ## 1. EXAM COHORT CHECKS
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- USER DATA CHECKS - OUTPUT IN THE DATA CHECKS TAB ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # colours for infoboxes
+  # red, yellow, aqua, blue, light-blue, green, navy, teal, olive, lime, orange, fuchsia, purple, maroon, black.
+
+
+  ## 1. REMOVED DATA
+  ## Do all of the exam cohort, qualification code, subject code and size combinations entered by the user exist?
+
+  removed_check <- reactive({
+    req(user_data_with_lookup())
+
+    user_data_with_lookup() %>%
+      filter(qual_id == "Removed") %>%
+      select(unique_identifier, cohort_code, qualification_code, subject_code, size)
+  })
+
+  removed_check_summary <- reactive({
+    req(removed_check())
+
+    removed_summary <- removed_check() %>%
+      select(-unique_identifier) %>%
+      count(pick(everything())) %>%
+      rename(
+        "User cohort code" = cohort_code,
+        "User qualification code" = qualification_code,
+        "User subject code" = subject_code,
+        "User size" = size,
+        "Number of rows updated" = n
+      )
+  })
+
+  output$removed_table <- renderDataTable({
+    datatable(
+      removed_check_summary(),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE
+      )
+    )
+  })
+
+  output$removed_download <- downloadHandler(
+    filename = "removed_check.csv",
+    content = function(file) {
+      write.csv(removed_check(), file, row.names = FALSE)
+    }
+  )
+
+  output$removed_infobox <- renderInfoBox({
+    colour <- "olive"
+    infobox_text <- "No changes made to student data"
+    icon_symbol <- "check"
+    if (removed_check_summary() %>% count() >= 1) {
+      colour <- "maroon"
+      infobox_text <- "Data has been removed"
+      icon_symbol <- "exclamation"
+    }
+    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  })
+
+
+  ## 2. EXAM COHORT CHECKS
   ## Does cohort name and cohort code match as expected?
 
   cohort_check_differences <- reactive({
@@ -272,6 +465,7 @@ server <- function(input, output, session) {
       left_join(user_data_with_lookup() %>% select(unique_identifier, cohort_name, cohort_code),
         by = "unique_identifier"
       ) %>%
+      filter(cohort_name.y != "Removed") %>%
       rename(
         "User cohort name" = cohort_name.x,
         "User cohort code" = cohort_code.x,
@@ -310,12 +504,12 @@ server <- function(input, output, session) {
   )
 
   output$cohort_infobox <- renderInfoBox({
-    colour <- "green"
-    infobox_text <- "No changes made to user data"
+    colour <- "olive"
+    infobox_text <- "No changes made to student data"
     icon_symbol <- "check"
     if (cohort_check_summary() %>% count() >= 1) {
-      colour <- "red"
-      infobox_text <- "Changes made to user data"
+      colour <- "maroon"
+      infobox_text <- "Changes made to student data"
       icon_symbol <- "exclamation"
     }
     infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
@@ -323,7 +517,7 @@ server <- function(input, output, session) {
 
 
 
-  ## 2. QUALIFICATION CHECKS
+  ## 3. QUALIFICATION CHECKS
   ## Does qualification name and qualification code match as expected?
 
   qualification_check_differences <- reactive({
@@ -336,6 +530,7 @@ server <- function(input, output, session) {
       left_join(user_data_with_lookup() %>% select(unique_identifier, qualification_name, qualification_code),
         by = "unique_identifier"
       ) %>%
+      filter(qualification_name.y != "Removed") %>%
       rename(
         "User qualification name" = qualification_name.x,
         "User qualification code" = qualification_code.x,
@@ -374,12 +569,12 @@ server <- function(input, output, session) {
   )
 
   output$qualification_infobox <- renderInfoBox({
-    colour <- "green"
-    infobox_text <- "No changes made to user data"
+    colour <- "olive"
+    infobox_text <- "No changes made to student data"
     icon_symbol <- "check"
     if (qualification_check_summary() %>% count() >= 1) {
-      colour <- "red"
-      infobox_text <- "Changes made to user data"
+      colour <- "maroon"
+      infobox_text <- "Changes made to student data"
       icon_symbol <- "exclamation"
     }
     infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
@@ -387,7 +582,7 @@ server <- function(input, output, session) {
 
 
 
-  ## 3. SUBJECT CHECKS
+  ## 4. SUBJECT CHECKS
   ## Does subject name and subject code match as expected?
 
   subject_check_differences <- reactive({
@@ -400,6 +595,7 @@ server <- function(input, output, session) {
       left_join(user_data_with_lookup() %>% select(unique_identifier, subject_name, subject_code),
         by = "unique_identifier"
       ) %>%
+      filter(subject_name.y != "Removed") %>%
       rename(
         "User subject name" = subject_name.x,
         "User subject code" = subject_code.x,
@@ -438,12 +634,12 @@ server <- function(input, output, session) {
   )
 
   output$subject_infobox <- renderInfoBox({
-    colour <- "green"
-    infobox_text <- "No changes made to user data"
+    colour <- "olive"
+    infobox_text <- "No changes made to student data"
     icon_symbol <- "check"
     if (subject_check_summary() %>% count() >= 1) {
-      colour <- "red"
-      infobox_text <- "Changes made to user data"
+      colour <- "maroon"
+      infobox_text <- "Changes made to student data"
       icon_symbol <- "exclamation"
     }
     infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
@@ -451,7 +647,7 @@ server <- function(input, output, session) {
 
 
 
-  ## 4. QUALID CHECKS
+  ## 5. QUALID CHECKS
   ## Does QUALID in user data match lookup as expected?
 
   qualid_check_differences <- reactive({
@@ -464,6 +660,7 @@ server <- function(input, output, session) {
       left_join(user_data_with_lookup() %>% select(unique_identifier, qual_id),
         by = "unique_identifier"
       ) %>%
+      filter(qual_id.y != "Removed") %>%
       rename(
         "User qualification ID" = qual_id.x,
         "Updated qualification ID" = qual_id.y
@@ -500,21 +697,122 @@ server <- function(input, output, session) {
   )
 
   output$qualid_infobox <- renderInfoBox({
-    colour <- "green"
-    infobox_text <- "No changes made to user data"
+    colour <- "olive"
+    infobox_text <- "No changes made to student data"
     icon_symbol <- "check"
     if (qualid_check_summary() %>% count() >= 1) {
-      colour <- "red"
-      infobox_text <- "Changes made to user data"
+      colour <- "maroon"
+      infobox_text <- "Changes made to student data"
       icon_symbol <- "exclamation"
     }
     infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
 
 
+  ## 6. PRIOR ATTAINMENT CHECKS
+  ## Does PRIOR ATTAINMENT in user data exceed the prior attainment in the maximum pava band for that subject?
+
+  prioratt_exceeds_upper <- reactive({
+    req(user_data_with_lookup())
+
+    prioratt_exceeds_upper <- user_data_academic() %>%
+      select(-c(qualification_name, subject_name, cohort_name)) %>%
+      left_join(data$national_bands, by = "qual_id") %>%
+      filter(prior_attainment > x_21) %>%
+      mutate(x_0 = "-")
+  })
+
+  prioratt_exceeds_lower <- reactive({
+    req(user_data_with_lookup())
+
+    prioratt_exceeds_lower <- user_data_academic() %>%
+      select(-c(qualification_name, subject_name, cohort_name)) %>%
+      left_join(data$national_bands, by = "qual_id") %>%
+      filter(prior_attainment < x_0) %>%
+      mutate(x_21 = "-")
+  })
+
+  prioratt_check_differences <- reactive({
+    req(prioratt_exceeds_upper())
+    req(prioratt_exceeds_lower())
+
+    prioratt_check_differences <- rbind(prioratt_exceeds_upper(), prioratt_exceeds_lower())
+  })
+
+  prioratt_check_summary <- reactive({
+    req(prioratt_check_differences())
+
+    prioratt_differences_summary <- prioratt_check_differences() %>%
+      select(unique_identifier, qual_id, prior_attainment, x_21, x_0) %>%
+      rename(
+        "Pupil unique identifier" = unique_identifier,
+        "User qualification ID" = qual_id,
+        "Pupil prior attainment" = prior_attainment,
+        "Value added model max prior attainment" = x_21,
+        "Value added model min prior attainment" = x_0
+      )
+  })
+
+  output$prioratt_check_table <- renderDataTable({
+    datatable(
+      prioratt_check_summary(),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE
+      )
+    )
+  })
+
+  output$prioratt_check_download <- downloadHandler(
+    filename = "qualid_check.csv",
+    content = function(file) {
+      write.csv(prioratt_check_differences(), file, row.names = FALSE)
+    }
+  )
+
+  output$prioratt_infobox <- renderInfoBox({
+    colour <- "olive"
+    infobox_text <- "No changes made to student data"
+    icon_symbol <- "check"
+    if (prioratt_check_summary() %>% count() >= 1) {
+      colour <- "maroon"
+      infobox_text <- "Changes made to student data"
+      icon_symbol <- "exclamation"
+    }
+    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  })
+
 
   # -----------------------------------------------------------------------------------------------------------------------------
-  # ---- User data - pupil value added ----
+  # ---- USER DATA FINAL ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  user_data_final <- reactive({
+    req(user_data_with_lookup)
+    req(prioratt_check_differences)
+
+    final_data <- user_data_with_lookup() %>%
+      filter(
+        qual_id != "Removed",
+        cohort_name != "Removed",
+        qualification_name != "Removed",
+        subject_name != "Removed",
+        unique_identifier %not_in% c(prioratt_exceeds_upper()$unique_identifier),
+        unique_identifier %not_in% c(prioratt_exceeds_lower()$unique_identifier)
+      )
+
+    return(final_data)
+  })
+
+
+
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- VA DERIVATIONS - BY STUDENT - OUTPUT IN THE STUDENT VALUE ADDED TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
   minpositive <- function(x) min(x[x >= 0])
@@ -523,10 +821,10 @@ server <- function(input, output, session) {
 
   ## 1.a. pivot the user data into long format
   ## 1.b calculate the difference between pupil prior attainment and each x band
-  pupil_pava_bands <- reactive({
-    req(user_data_with_lookup())
+  student_pava_bands <- reactive({
+    req(user_data_final())
 
-    user_data_with_lookup() %>%
+    user_data_final() %>%
       select(-c(qualification_name, subject_name, cohort_name)) %>%
       left_join(data$national_bands, by = "qual_id") %>%
       pivot_longer(
@@ -543,9 +841,9 @@ server <- function(input, output, session) {
   ## 1.d. in some instances there may be multiple lower bands (all with the same value) so we want to select the highest possible band to be lower_band
   ## 1.e. we can then define upper_band to be lower_band plus 1
   pupil_pava_bands_flags <- reactive({
-    req(pupil_pava_bands())
+    req(student_pava_bands())
 
-    pupil_pava_bands() %>%
+    student_pava_bands() %>%
       group_by(unique_identifier) %>%
       mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
       filter(smallest_positive_difference == TRUE) %>%
@@ -561,7 +859,7 @@ server <- function(input, output, session) {
   pupil_pava_bands_filtered <- reactive({
     req(pupil_pava_bands_flags())
 
-    pupil_pava_bands() %>%
+    student_pava_bands() %>%
       inner_join(pupil_pava_bands_flags(), by = "unique_identifier") %>%
       filter(band == lower_band | band == upper_band) %>%
       mutate(band = as.numeric(band)) %>%
@@ -594,7 +892,7 @@ server <- function(input, output, session) {
         value_added = actual_points - estimated_points
       ) %>%
       select(all_of(expected_column_names), estimated_points, value_added) %>%
-      left_join(data$subject_variance %>% select(qual_id, subj_weighting, weighting), by = "qual_id") %>%
+      left_join(data$subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
       mutate(
         value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
         value_added_qual_weight = value_added * (weighting / as.numeric(size))
@@ -603,28 +901,22 @@ server <- function(input, output, session) {
 
 
 
-  ## calculating value added and confidence intervals for each qualification/subject combination (each qual_id)
-  subject_va <- reactive({
-    req(pupil_va())
+  ## pupil VA download
 
-    pupil_va() %>%
-      group_by(
-        cohort_code, cohort_name, qualification_code, qualification_name,
-        subject_code, subject_name, size, qual_id
-      ) %>%
-      summarise(
-        student_count = n(),
-        subject_va_pt1 = mean(value_added)
-      ) %>%
-      left_join(data$subject_variance %>% select(qual_id, sd_suqu), by = "qual_id") %>%
-      mutate(
-        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
-        standard_error = sd_suqu / sqrt(student_count),
-        lower_confidence_interval = subject_va_grade - (1.96 * standard_error),
-        upper_confidence_interval = subject_va_grade + (1.96 * standard_error)
-      ) %>%
-      ungroup()
+  output$pupil_va_download2 <- renderUI({
+    req(pupil_va())
+    downloadButton("pupil_va_download", label = "Student value added scores")
   })
+
+  output$pupil_va_download <- downloadHandler(
+    filename = "pupil_va.csv",
+    content = function(file) {
+      write.csv(pupil_va(), file, row.names = FALSE)
+    }
+  )
+
+
+  ## pupil VA preview
 
   output$student_va_scores <- renderDataTable({
     datatable(
@@ -653,7 +945,254 @@ server <- function(input, output, session) {
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
-  # ---- Dropdown boxes ----
+  # ---- VA DERIVATIONS - BY SUBJECT - USED IN THE NATIONAL COMPARISON TAB (IN THE INFO BOXES) ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  ## calculating value added and confidence intervals for each qualification/subject combination (each qual_id)
+  subject_va <- reactive({
+    req(pupil_va())
+
+    pupil_va() %>%
+      group_by(
+        cohort_code, cohort_name, qualification_code, qualification_name,
+        subject_code, subject_name, size, qual_id
+      ) %>%
+      summarise(
+        subject_student_count = n(),
+        subject_va_pt1 = mean(value_added)
+      ) %>%
+      left_join(
+        data$subject_variance %>%
+          select(qual_id, qual_co_id, sd_suqu),
+        by = "qual_id"
+      ) %>%
+      mutate(
+        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
+        subject_standard_error = sd_suqu / sqrt(subject_student_count),
+        lower_confidence_interval = subject_va_grade - (1.96 * subject_standard_error),
+        upper_confidence_interval = subject_va_grade + (1.96 * subject_standard_error)
+      ) %>%
+      ungroup()
+  })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- HEADLINE VA DERIVATIONS - BY QUALIFICATION TYPE ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  ## qual_standard_error_pt1 equivalent to sd_qual_step1 in subject tab
+  ## qual_standard_error_pt2 equivalent to sd_qual_step1 in qualification tab
+  qualification_va <- reactive({
+    req(pupil_va())
+
+    pupil_va() %>%
+      group_by(qual_co_id, cohort_code, cohort_name, qualification_code, qualification_name, size) %>%
+      summarise(
+        qual_student_count = n(),
+        qual_va_numerator = sum(value_added_qual_weight, na.rm = TRUE),
+        qual_va_denominator = sum(weighting, na.rm = TRUE)
+      ) %>%
+      group_by(
+        qual_co_id, cohort_code, cohort_name, qualification_code, qualification_name, size,
+        qual_student_count, qual_va_numerator, qual_va_denominator
+      ) %>%
+      left_join(
+        subject_va() %>%
+          select(qual_co_id, subject_student_count, subject_standard_error),
+        by = "qual_co_id"
+      ) %>%
+      mutate(qual_standard_error_pt1 = (subject_standard_error * subject_student_count / qual_student_count)^2) %>%
+      summarise(qual_standard_error_pt2 = sum(qual_standard_error_pt1, na.rm = TRUE)) %>%
+      mutate(
+        qual_va_grade = qual_va_numerator / qual_va_denominator / 10,
+        qual_standard_error = sqrt(qual_standard_error_pt2),
+        lower_confidence_interval = qual_va_grade - (1.96 * qual_standard_error),
+        upper_confidence_interval = qual_va_grade + (1.96 * qual_standard_error)
+      ) %>%
+      ungroup()
+  })
+
+
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- HEADLINE VA DERIVATIONS - BY COHORT ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+
+  ## need to add in flag for academic cohort to pupil_va
+
+  ## cohort_standard_error_pt1 equivalent to sd_alev in qualification tab
+  ## cohort_standard_error_pt2 equivalent to sum(sd_step1) in headline measures tab
+  cohort_va <- reactive({
+    req(pupil_va())
+
+    pupil_va() %>%
+      group_by(cohort_code, cohort_name) %>%
+      summarise(
+        cohort_student_count = n(),
+        cohort_va_numerator = sum(value_added_qual_weight, na.rm = TRUE),
+        cohort_va_denominator = sum(weighting, na.rm = TRUE)
+      ) %>%
+      group_by(
+        cohort_code, cohort_name,
+        cohort_student_count, cohort_va_numerator, cohort_va_denominator
+      ) %>%
+      left_join(
+        qualification_va() %>%
+          select(cohort_code, cohort_name, qual_student_count, qual_standard_error, size),
+        by = c("cohort_code", "cohort_name")
+      ) %>%
+      mutate(
+        student_count_byqualsize = (qual_student_count * as.numeric(size)),
+        sum_student_count_byqualsize = sum(student_count_byqualsize, na.rm = TRUE),
+        cohort_standard_error_pt1 = (qual_standard_error * student_count_byqualsize / sum_student_count_byqualsize)^2
+      ) %>%
+      summarise(cohort_standard_error_pt2 = sum(cohort_standard_error_pt1, na.rm = TRUE)) %>%
+      mutate(
+        cohort_va_grade = cohort_va_numerator / cohort_va_denominator / 10,
+        cohort_standard_error = sqrt(cohort_standard_error_pt2),
+        lower_confidence_interval = cohort_va_grade - (1.96 * cohort_standard_error),
+        upper_confidence_interval = cohort_va_grade + (1.96 * cohort_standard_error)
+      ) %>%
+      ungroup()
+  })
+
+
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- DISADVANTAGED HEADLINE VA DERIVATIONS - BY COHORT ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+
+  pupil_va_disadvantaged <- reactive({
+    req(pupil_pava_bands_filtered())
+
+    pupil_pava_bands_filtered() %>%
+      filter(disadvantaged_status == 1) %>%
+      group_by(unique_identifier) %>%
+      mutate(numbering = row_number()) %>%
+      mutate(band_position = case_when(
+        numbering == 1 ~ "lower",
+        numbering == 2 ~ "upper",
+        TRUE ~ "error"
+      )) %>%
+      select(-c(band, numbering)) %>%
+      pivot_wider(
+        names_from = band_position,
+        values_from = c(x, y, difference_prior_x)
+      ) %>%
+      ungroup() %>%
+      mutate(
+        delta_x = x_upper - x_lower,
+        delta_y = y_upper - y_lower,
+        estimated_points = (delta_y / delta_x) * (prior_attainment - x_lower) + y_lower,
+        value_added = actual_points - estimated_points
+      ) %>%
+      select(all_of(expected_column_names), estimated_points, value_added) %>%
+      left_join(data$disadvantaged_subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
+      mutate(
+        value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
+        value_added_qual_weight = value_added * (weighting / as.numeric(size))
+      )
+  })
+
+  subject_va_disadvantaged <- reactive({
+    req(pupil_va_disadvantaged())
+
+    pupil_va_disadvantaged() %>%
+      group_by(
+        cohort_code, cohort_name, qualification_code, qualification_name,
+        subject_code, subject_name, size, qual_id
+      ) %>%
+      summarise(
+        subject_student_count = n(),
+        subject_va_pt1 = mean(value_added)
+      ) %>%
+      left_join(
+        data$disadvantaged_subject_variance %>%
+          select(qual_id, qual_co_id, sd_suqu),
+        by = "qual_id"
+      ) %>%
+      mutate(
+        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
+        subject_standard_error = sd_suqu / sqrt(subject_student_count),
+        lower_confidence_interval = subject_va_grade - (1.96 * subject_standard_error),
+        upper_confidence_interval = subject_va_grade + (1.96 * subject_standard_error)
+      ) %>%
+      ungroup()
+  })
+
+  qualification_va_disadvantaged <- reactive({
+    req(pupil_va_disadvantaged())
+
+    pupil_va_disadvantaged() %>%
+      group_by(qual_co_id, cohort_code, cohort_name, qualification_code, qualification_name, size) %>%
+      summarise(
+        qual_student_count = n(),
+        qual_va_numerator = sum(value_added_qual_weight, na.rm = TRUE),
+        qual_va_denominator = sum(weighting, na.rm = TRUE)
+      ) %>%
+      group_by(
+        qual_co_id, cohort_code, cohort_name, qualification_code, qualification_name, size,
+        qual_student_count, qual_va_numerator, qual_va_denominator
+      ) %>%
+      left_join(
+        subject_va_disadvantaged() %>%
+          select(qual_co_id, subject_student_count, subject_standard_error),
+        by = "qual_co_id"
+      ) %>%
+      mutate(qual_standard_error_pt1 = (subject_standard_error * subject_student_count / qual_student_count)^2) %>%
+      summarise(qual_standard_error_pt2 = sum(qual_standard_error_pt1, na.rm = TRUE)) %>%
+      mutate(
+        qual_va_grade = qual_va_numerator / qual_va_denominator / 10,
+        qual_standard_error = sqrt(qual_standard_error_pt2),
+        lower_confidence_interval = qual_va_grade - (1.96 * qual_standard_error),
+        upper_confidence_interval = qual_va_grade + (1.96 * qual_standard_error)
+      ) %>%
+      ungroup()
+  })
+
+  cohort_va_disadvantaged <- reactive({
+    req(pupil_va_disadvantaged())
+
+    pupil_va_disadvantaged() %>%
+      group_by(cohort_code, cohort_name) %>%
+      summarise(
+        cohort_student_count = n(),
+        cohort_va_numerator = sum(value_added_qual_weight, na.rm = TRUE),
+        cohort_va_denominator = sum(weighting, na.rm = TRUE)
+      ) %>%
+      group_by(
+        cohort_code, cohort_name,
+        cohort_student_count, cohort_va_numerator, cohort_va_denominator
+      ) %>%
+      left_join(
+        qualification_va_disadvantaged() %>%
+          select(cohort_code, cohort_name, qual_student_count, qual_standard_error, size),
+        by = c("cohort_code", "cohort_name")
+      ) %>%
+      mutate(
+        student_count_byqualsize = (qual_student_count * as.numeric(size)),
+        sum_student_count_byqualsize = sum(student_count_byqualsize, na.rm = TRUE),
+        cohort_standard_error_pt1 = (qual_standard_error * student_count_byqualsize / sum_student_count_byqualsize)^2
+      ) %>%
+      summarise(cohort_standard_error_pt2 = sum(cohort_standard_error_pt1, na.rm = TRUE)) %>%
+      mutate(
+        cohort_va_grade = cohort_va_numerator / cohort_va_denominator / 10,
+        cohort_standard_error = sqrt(cohort_standard_error_pt2),
+        lower_confidence_interval = cohort_va_grade - (1.96 * cohort_standard_error),
+        upper_confidence_interval = cohort_va_grade + (1.96 * cohort_standard_error)
+      ) %>%
+      ungroup()
+  })
+
+
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- DROPDOWN BOXES - OUTPUT IN THE NATIONAL COMPARISON TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
 
@@ -718,7 +1257,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_cohort",
         label = NULL,
-        choices <- user_data_with_lookup() %>%
+        choices <- user_data_final() %>%
           select(cohort_name) %>%
           distinct() %>%
           pull(cohort_name) %>%
@@ -729,7 +1268,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_qualifications",
         label = NULL,
-        choices <- user_data_with_lookup() %>%
+        choices <- user_data_final() %>%
           select(cohort_name, qualification_name) %>%
           distinct() %>%
           filter(cohort_name == input$dropdown_cohort) %>%
@@ -741,7 +1280,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_subjects",
         label = NULL,
-        choices <- user_data_with_lookup() %>%
+        choices <- user_data_final() %>%
           select(cohort_name, qualification_name, subject_name) %>%
           distinct() %>%
           filter(
@@ -756,7 +1295,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_sizes",
         label = NULL,
-        choices <- user_data_with_lookup() %>%
+        choices <- user_data_final() %>%
           select(cohort_name, qualification_name, subject_name, size) %>%
           distinct() %>%
           filter(
@@ -797,7 +1336,7 @@ server <- function(input, output, session) {
   })
 
   # -----------------------------------------------------------------------------------------------------------------------------
-  # ---- SUBJECT CHART DATA ----
+  # ---- SUBJECT CHART DATA - OUTPUT IN THE NATIONAL COMPARISON TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
   ## extract the relevant national data for the subject comparison chart based on the reactive qual_id
@@ -839,7 +1378,7 @@ server <- function(input, output, session) {
       mutate(source = "national") %>%
       select(-set)
 
-    user_chart_data <- user_data_with_lookup() %>%
+    user_chart_data <- user_data_final() %>%
       filter(qual_id == as.character(reactive_qualid())) %>%
       select(x = prior_attainment, y = actual_points) %>%
       mutate(source = "user")
@@ -860,13 +1399,14 @@ server <- function(input, output, session) {
 
 
 
-
   output$subject_chart <- renderPlot({
     req(subject_chart_data())
 
-    max_x <- subject_chart_data() %>%
-      select(x) %>%
-      max()
+    # max_x <- subject_chart_data() %>%
+    #   select(x) %>%
+    #   max()
+
+    # print(max_x())
 
     ggplot(subject_chart_data(), aes(x = x, y = y, color = source, shape = source)) +
       geom_line(data = filter(subject_chart_data(), source == "national")) +
@@ -881,7 +1421,7 @@ server <- function(input, output, session) {
       ) +
       xlab("Prior Attainment (points)") +
       ylab("Outcome Attainment (points)") +
-      scale_x_continuous(breaks = seq(0, max_x, by = 2)) +
+      # scale_x_continuous(breaks = seq(0, max_x, by = 2)) +
       scale_colour_manual(values = c("black", "red")) +
       scale_shape_manual(values = c(NA, 4))
   })
@@ -889,283 +1429,1453 @@ server <- function(input, output, session) {
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
-  # ---- SUBJECT CHART VA DATA ----
+  # ---- SUBJECT LEVEL VA DATA BOXES - OUTPUT IN THE NATIONAL COMPARISON TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
 
 
-  ## extract the relevant national data for the subject comparison chart based on the reactive qual_id
-  number_of_entries <- reactive({
+  ## 1. derive number of entries for chosen qual_id
+  subject_entries0 <- reactive({
     req(reactive_qualid())
 
     # print(reactive_qualid())
 
     n <- subject_va() %>%
       filter(qual_id == as.character(reactive_qualid())) %>%
-      select(student_count) %>%
+      select(subject_student_count) %>%
       pull()
 
     return(n)
   })
 
-
-  output$entries <- renderValueBox({
+  output$subject_entries <- renderValueBox({
     # Put value into box to plug into app
-    valueBox(
-      # take input number
-      paste0(number_of_entries()),
-      # add subtitle to explain what it's showing
-      paste0("Number of pupils"),
-      color = "blue"
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (input$data_source == "National data only") {
+      valueBox(
+        paste0("-"),
+        paste0("Select 'National and student data'"),
+        color = "purple"
+      )
+    } else {
+      valueBox(
+        # take input number
+        paste0(subject_entries0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "purple"
+      )
+    }
+  })
+
+
+  ## 2. derive VA for chosen qual_id
+  subject_va_grade0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- subject_va() %>%
+      filter(qual_id == as.character(reactive_qualid())) %>%
+      select(subject_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$subject_va_grade <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (input$data_source == "National data only") {
+      valueBox(
+        paste0("-"),
+        paste0("Select 'National and student data'"),
+        color = "purple"
+      )
+    } else {
+      # Put value into box to plug into app
+      valueBox(
+        # take input number
+        paste0(round2(subject_va_grade0(), 2)),
+        # add subtitle to explain what it's showing
+        paste0("Value added grade"),
+        color = "purple"
+      )
+    }
+  })
+
+
+  ## 3. derive CI for chosen qual_id
+  ci_lower0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- subject_va() %>%
+      filter(qual_id == as.character(reactive_qualid())) %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  ci_upper0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- subject_va() %>%
+      filter(qual_id == as.character(reactive_qualid())) %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$ci <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (input$data_source == "National data only") {
+      valueBox(
+        paste0("-"),
+        paste0("Select 'National and student data'"),
+        color = "purple"
+      )
+    } else {
+      valueBox(
+        # take input number
+        paste0("[", round2(ci_lower0(), 2), ", ", round2(ci_upper0(), 2), "]"),
+        # add subtitle to explain what it's showing
+        paste0("Confidence intervals"),
+        color = "purple"
+      )
+    }
+  })
+
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- SUBJECT CHART POINTS/GRADE CORRELATION - OUTPUT IN THE NATIONAL COMPARISON TAB ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  grade_point_relation <- reactive({
+    req(input$dropdown_qualifications)
+    req(input$dropdown_sizes)
+
+    data$points_lookup %>%
+      arrange(desc(points), grade) %>%
+      filter(
+        cohort_name == input$dropdown_cohort,
+        qualification_name == input$dropdown_qualifications,
+        subject_name == input$dropdown_subjects,
+        size == input$dropdown_sizes
+      ) %>%
+      select(grade, points)
+  })
+
+  output$grade_point_table <- renderDataTable({
+    datatable(
+      grade_point_relation()[-1] %>%
+        rename("Outcome attainment points" = points) %>%
+        t() %>%
+        as.data.frame() %>%
+        setNames(grade_point_relation()[, 1]),
+      options = list(
+        scrollX = TRUE,
+        scrollY = "250px",
+        info = FALSE,
+        pageLength = FALSE,
+        paging = FALSE,
+        searching = FALSE
+      )
     )
   })
 
-  # reactiveRevBal <- reactive({
-  #   dfRevBal %>% filter(
-  #     area_name == input$selectArea | area_name == "England",
-  #     school_phase == input$selectPhase
-  #   )
-  # })
-  #
-  # # Define server logic required to draw a histogram
-  # output$lineRevBal <- snapshotPreprocessOutput(
-  #   renderGirafe({
-  #     girafe(
-  #       ggobj = createAvgRevTimeSeries(reactiveRevBal(), input$selectArea),
-  #       options = list(opts_sizing(rescale = TRUE, width = 1.0)),
-  #       width_svg = 9.6,
-  #       height_svg = 5.0
-  #     )
-  #   }),
-  #   function(value) {
-  #     # Removing elements that cause issues with shinytest comparisons when run
-  #     # on different environments
-  #     svg_removed <- gsub(
-  #       "svg_[0-9a-z]{8}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{12}",
-  #       "svg_random_giraph_string", value
-  #     )
-  #     font_standardised <- gsub("Arial", "Helvetica", svg_removed)
-  #     cleaned_positions <- gsub(
-  #       "[a-z]*x[0-9]*='[0-9.]*' [a-z]*y[0-9]*='[0-9.]*'",
-  #       "Position", font_standardised
-  #     )
-  #     cleaned_size <- gsub(
-  #       "width='[0-9.]*' height='[0-9.]*'", "Size", cleaned_positions
-  #     )
-  #     cleaned_points <- gsub("points='[0-9., ]*'", "points", cleaned_size)
-  #     cleaned_points
-  #   }
-  # )
-  #
-  # reactiveBenchmark <- reactive({
-  #   dfRevBal %>%
-  #     filter(
-  #       area_name %in% c(input$selectArea, input$selectBenchLAs),
-  #       school_phase == input$selectPhase,
-  #       year == max(year)
-  #     )
-  # })
-  #
-  # output$colBenchmark <- snapshotPreprocessOutput(
-  #   renderGirafe({
-  #     girafe(
-  #       ggobj = plotAvgRevBenchmark(reactiveBenchmark()),
-  #       options = list(opts_sizing(rescale = TRUE, width = 1.0)),
-  #       width_svg = 5.0,
-  #       height_svg = 5.0
-  #     )
-  #   }),
-  #   function(value) {
-  #     # Removing elements that cause issues with shinytest comparisons when run on
-  #     # different environments - should add to dfeshiny at some point.
-  #     svg_removed <- gsub(
-  #       "svg_[0-9a-z]{8}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{4}_[0-9a-z]{12}",
-  #       "svg_random_giraph_string",
-  #       value
-  #     )
-  #     font_standardised <- gsub("Arial", "Helvetica", svg_removed)
-  #     cleaned_positions <- gsub(
-  #       "x[0-9]*='[0-9.]*' y[0-9]*='[0-9.]*'",
-  #       "Position", font_standardised
-  #     )
-  #     cleaned_size <- gsub(
-  #       "width='[0-9.]*' height='[0-9.]*'",
-  #       "Size", cleaned_positions
-  #     )
-  #     cleaned_points <- gsub("points='[0-9., ]*'", "points", cleaned_size)
-  #     cleaned_points
-  #   }
-  # )
-  #
-  # output$tabBenchmark <- renderDataTable({
-  #   datatable(
-  #     reactiveBenchmark() %>%
-  #       select(
-  #         Area = area_name,
-  #         `Average Revenue Balance (£)` = average_revenue_balance,
-  #         `Total Revenue Balance (£m)` = total_revenue_balance_million
-  #       ),
-  #     options = list(
-  #       scrollX = TRUE,
-  #       paging = FALSE
-  #     )
-  #   )
-  # })
-  #
-  # # Define server logic to create a box
-  #
-  # output$boxavgRevBal <- renderValueBox({
-  #   # Put value into box to plug into app
-  #   valueBox(
-  #     # take input number
-  #     paste0("£", format(
-  #       (reactiveRevBal() %>% filter(
-  #         year == max(year),
-  #         area_name == input$selectArea,
-  #         school_phase == input$selectPhase
-  #       ))$average_revenue_balance,
-  #       big.mark = ","
-  #     )),
-  #     # add subtitle to explain what it's hsowing
-  #     paste0("This is the latest value for the selected inputs"),
-  #     color = "blue"
-  #   )
-  # })
-  #
-  # output$boxpcRevBal <- renderValueBox({
-  #   latest <- (reactiveRevBal() %>% filter(
-  #     year == max(year),
-  #     area_name == input$selectArea,
-  #     school_phase == input$selectPhase
-  #   ))$average_revenue_balance
-  #   penult <- (reactiveRevBal() %>% filter(
-  #     year == max(year) - 1,
-  #     area_name == input$selectArea,
-  #     school_phase == input$selectPhase
-  #   ))$average_revenue_balance
-  #
-  #   # Put value into box to plug into app
-  #   valueBox(
-  #     # take input number
-  #     paste0("£", format(latest - penult,
-  #       big.mark = ","
-  #     )),
-  #     # add subtitle to explain what it's hsowing
-  #     paste0("This is the change on previous year"),
-  #     color = "blue"
-  #   )
-  # })
-  #
-  # output$boxavgRevBal_small <- renderValueBox({
-  #   # Put value into box to plug into app
-  #   valueBox(
-  #     # take input number
-  #     paste0("£", format(
-  #       (reactiveRevBal() %>% filter(
-  #         year == max(year),
-  #         area_name == input$selectArea,
-  #         school_phase == input$selectPhase
-  #       ))$average_revenue_balance,
-  #       big.mark = ","
-  #     )),
-  #     # add subtitle to explain what it's hsowing
-  #     paste0("This is the latest value for the selected inputs"),
-  #     color = "orange",
-  #     fontsize = "small"
-  #   )
-  # })
-  #
-  # output$boxpcRevBal_small <- renderValueBox({
-  #   latest <- (reactiveRevBal() %>% filter(
-  #     year == max(year),
-  #     area_name == input$selectArea,
-  #     school_phase == input$selectPhase
-  #   ))$average_revenue_balance
-  #   penult <- (reactiveRevBal() %>% filter(
-  #     year == max(year) - 1,
-  #     area_name == input$selectArea,
-  #     school_phase == input$selectPhase
-  #   ))$average_revenue_balance
-  #
-  #   # Put value into box to plug into app
-  #   valueBox(
-  #     # take input number
-  #     paste0("£", format(latest - penult,
-  #       big.mark = ","
-  #     )),
-  #     # add subtitle to explain what it's hsowing
-  #     paste0("This is the change on previous year"),
-  #     color = "orange",
-  #     fontsize = "small"
-  #   )
-  # })
-  #
-  # output$boxavgRevBal_large <- renderValueBox({
-  #   # Put value into box to plug into app
-  #   valueBox(
-  #     # take input number
-  #     paste0("£", format(
-  #       (reactiveRevBal() %>% filter(
-  #         year == max(year),
-  #         area_name == input$selectArea,
-  #         school_phase == input$selectPhase
-  #       ))$average_revenue_balance,
-  #       big.mark = ","
-  #     )),
-  #     # add subtitle to explain what it's hsowing
-  #     paste0("This is the latest value for the selected inputs"),
-  #     color = "green",
-  #     fontsize = "large"
-  #   )
-  # })
-  #
-  # output$boxpcRevBal_large <- renderValueBox({
-  #   latest <- (reactiveRevBal() %>% filter(
-  #     year == max(year),
-  #     area_name == input$selectArea,
-  #     school_phase == input$selectPhase
-  #   ))$average_revenue_balance
-  #   penult <- (reactiveRevBal() %>% filter(
-  #     year == max(year) - 1,
-  #     area_name == input$selectArea,
-  #     school_phase == input$selectPhase
-  #   ))$average_revenue_balance
-  #
-  #   # Put value into box to plug into app
-  #   valueBox(
-  #     # take input number
-  #     paste0("£", format(latest - penult,
-  #       big.mark = ","
-  #     )),
-  #     # add subtitle to explain what it's hsowing
-  #     paste0("This is the change on previous year"),
-  #     color = "green",
-  #     fontsize = "large"
-  #   )
-  # })
-  #
-  # observeEvent(input$go, {
-  #   toggle(id = "div_a", anim = T)
-  # })
-  #
-  #
-  # observeEvent(input$link_to_app_content_tab, {
-  #   updateTabsetPanel(session, "navlistPanel", selected = "dashboard")
-  # })
-  #
-  # # Download the underlying data button
-  # output$download_data <- downloadHandler(
-  #   filename = "shiny_template_underlying_data.csv",
-  #   content = function(file) {
-  #     write.csv(dfRevBal, file)
-  #   }
-  # )
-  #
-  # # Add input IDs here that are within the relevant drop down boxes to create
-  # # dynamic text
-  # output$dropdown_label <- renderText({
-  #   paste0("Current selections: ", input$selectPhase, ", ", input$selectArea)
-  # })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- COHORT LEVEL VA DATA BOXES - OUTPUT IN THE VA COHORT TAB ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  # colours for infoboxes
+  # red, yellow, aqua, blue, light-blue, green, navy, teal, olive, lime, orange, fuchsia, purple, maroon, black.
+
+  output$test_table <- renderDataTable({
+    datatable(qualification_va())
+  })
+
+
+  ## 1. derive number of entries for each cohort
+  cohort_alev_entries0 <- reactive({
+    req(cohort_va())
+
+    # print(cohort_va())
+    n <- cohort_va() %>%
+      filter(cohort_name == "A level") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_alev_entries <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_alev_entries0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_alev_entries0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_acad_entries0 <- reactive({
+    req(cohort_va())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Academic") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_acad_entries <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_acad_entries0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_acad_entries0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_agen_entries0 <- reactive({
+    req(cohort_va())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_agen_entries <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_agen_entries0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_agen_entries0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techlev_entries0 <- reactive({
+    req(cohort_va())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techlev_entries <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techlev_entries0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_techlev_entries0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techcert_entries0 <- reactive({
+    req(cohort_va())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techcert_entries <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techcert_entries0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_techcert_entries0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+  ## --------------------------------------------------------------------------
+
+  ## 2. derive VA for chosen qual_id
+  cohort_alev_va_grade0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "A level") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_alev_va_grade <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_alev_entries0() != 0)) {
+      # Put value into box to plug into app
+      valueBox(
+        paste0(round2(cohort_alev_va_grade0(), 2)),
+        paste0("Value added grade"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_acad_va_grade0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Academic") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_acad_va_grade <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_acad_entries0() != 0)) {
+      valueBox(
+        paste0(round2(cohort_acad_va_grade0(), 2)),
+        paste0("Value added grade"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_agen_va_grade0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_agen_va_grade <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_agen_entries0() != 0)) {
+      valueBox(
+        paste0(round2(cohort_agen_va_grade0(), 2)),
+        paste0("Value added grade"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techlev_va_grade0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techlev_va_grade <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techlev_entries0() != 0)) {
+      valueBox(
+        paste0(round2(cohort_techlev_va_grade0(), 2)),
+        paste0("Value added grade"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techcert_va_grade0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techcert_va_grade <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techcert_entries0() != 0)) {
+      valueBox(
+        paste0(round2(cohort_techcert_va_grade0(), 2)),
+        paste0("Value added grade"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+  ## --------------------------------------------------------------------------
+
+
+  ## 3. derive CI for chosen qual_id
+  cohort_alev_ci_lower0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "A level") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_alev_ci_upper0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "A level") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_alev_ci <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_alev_entries0() != 0)) {
+      valueBox(
+        paste0("[", round2(cohort_alev_ci_lower0(), 2), ", ", round2(cohort_alev_ci_upper0(), 2), "]"),
+        paste0("Confidence intervals"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_acad_ci_lower0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Academic") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_acad_ci_upper0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Academic") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_acad_ci <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_acad_entries0() != 0)) {
+      valueBox(
+        paste0("[", round2(cohort_acad_ci_lower0(), 2), ", ", round2(cohort_acad_ci_upper0(), 2), "]"),
+        paste0("Confidence intervals"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_agen_ci_lower0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_agen_ci_upper0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_agen_ci <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_agen_entries0() != 0)) {
+      valueBox(
+        paste0("[", round2(cohort_agen_ci_lower0(), 2), ", ", round2(cohort_agen_ci_upper0(), 2), "]"),
+        paste0("Confidence intervals"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techlev_ci_lower0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_techlev_ci_upper0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techlev_ci <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techlev_entries0() != 0)) {
+      valueBox(
+        paste0("[", round2(cohort_techlev_ci_lower0(), 2), ", ", round2(cohort_techlev_ci_upper0(), 2), "]"),
+        paste0("Confidence intervals"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techcert_ci_lower0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_techcert_ci_upper0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techcert_ci <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techcert_entries0() != 0)) {
+      valueBox(
+        paste0("[", round2(cohort_techcert_ci_lower0(), 2), ", ", round2(cohort_techcert_ci_upper0(), 2), "]"),
+        paste0("Confidence intervals"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- COHORT LEVEL VA DATA BOXES - OUTPUT IN THE VA COHORT TAB ---- DISADVANTAGED
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+
+  ## 1. derive number of entries for each cohort
+  cohort_alev_entries_dis0 <- reactive({
+    req(cohort_va_disadvantaged())
+
+    # print(cohort_va_disadvantaged())
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "A level") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    print(n)
+
+    return(n)
+  })
+
+  output$cohort_alev_entries_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_alev_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_alev_entries_dis0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_acad_entries_dis0 <- reactive({
+    req(cohort_va_disadvantaged())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Academic") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_acad_entries_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_acad_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_acad_entries_dis0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_agen_entries_dis0 <- reactive({
+    req(cohort_va_disadvantaged())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_agen_entries_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_agen_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_agen_entries_dis0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techlev_entries_dis0 <- reactive({
+    req(cohort_va_disadvantaged())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techlev_entries_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techlev_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_techlev_entries_dis0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techcert_entries_dis0 <- reactive({
+    req(cohort_va_disadvantaged())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(cohort_student_count) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techcert_entries_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techcert_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(cohort_techcert_entries_dis0()),
+        # add subtitle to explain what it's showing
+        paste0("Number of students"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+  ## --------------------------------------------------------------------------
+
+  ## 2. derive VA for chosen qual_id
+  cohort_alev_va_grade_dis0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "A level") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_alev_va_grade_dis <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_alev_entries_dis0() != 0)) {
+      # Put value into box to plug into app
+      valueBox(
+        # take input number
+        paste0(round2(cohort_alev_va_grade_dis0(), 2)),
+        # add subtitle to explain what it's showing
+        paste0("Value added grade"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_acad_va_grade_dis0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Academic") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_acad_va_grade_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_acad_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(round2(cohort_acad_va_grade_dis0(), 2)),
+        # add subtitle to explain what it's showing
+        paste0("Value added grade"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_agen_va_grade_dis0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_agen_va_grade_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_agen_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(round2(cohort_agen_va_grade_dis0(), 2)),
+        # add subtitle to explain what it's showing
+        paste0("Value added grade"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techlev_va_grade_dis0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techlev_va_grade_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techlev_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(round2(cohort_techlev_va_grade_dis0(), 2)),
+        # add subtitle to explain what it's showing
+        paste0("Value added grade"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techcert_va_grade_dis0 <- reactive({
+    req(reactive_qualid())
+
+    # print(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(cohort_va_grade) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techcert_va_grade_dis <- renderValueBox({
+    # Put value into box to plug into app
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techcert_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0(round2(cohort_techcert_va_grade_dis0(), 2)),
+        # add subtitle to explain what it's showing
+        paste0("Value added grade"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+  ## --------------------------------------------------------------------------
+
+
+  ## 3. derive CI for chosen qual_id
+  cohort_alev_ci_lower_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "A level") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_alev_ci_upper_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "A level") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_alev_ci_dis <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_alev_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0("[", round2(cohort_alev_ci_lower_dis0(), 2), ", ", round2(cohort_alev_ci_upper_dis0(), 2), "]"),
+        # add subtitle to explain what it's showing
+        paste0("Confidence intervals"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_acad_ci_lower_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Academic") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_acad_ci_upper_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Academic") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_acad_ci_dis <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_acad_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0("[", round2(cohort_acad_ci_lower_dis0(), 2), ", ", round2(cohort_acad_ci_upper_dis0(), 2), "]"),
+        # add subtitle to explain what it's showing
+        paste0("Confidence intervals"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_agen_ci_lower_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_agen_ci_upper_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Applied general") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_agen_ci_dis <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_agen_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0("[", round2(cohort_agen_ci_lower_dis0(), 2), ", ", round2(cohort_agen_ci_upper_dis0(), 2), "]"),
+        # add subtitle to explain what it's showing
+        paste0("Confidence intervals"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techlev_ci_lower_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_techlev_ci_upper_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Tech level") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techlev_ci_dis <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techlev_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0("[", round2(cohort_techlev_ci_lower_dis0(), 2), ", ", round2(cohort_techlev_ci_upper_dis0(), 2), "]"),
+        # add subtitle to explain what it's showing
+        paste0("Confidence intervals"),
+        color = "blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
+    }
+  })
+
+  ## --------------------------------------------------------------------------
+
+  cohort_techcert_ci_lower_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(lower_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  cohort_techcert_ci_upper_dis0 <- reactive({
+    req(reactive_qualid())
+
+    n <- cohort_va_disadvantaged() %>%
+      filter(cohort_name == "Technical certificate") %>%
+      select(upper_confidence_interval) %>%
+      pull()
+
+    return(n)
+  })
+
+  output$cohort_techcert_ci_dis <- renderValueBox({
+    if (is.null(input$upload)) {
+      valueBox(
+        paste0("-"),
+        paste0("Please upload student data"),
+        color = "purple"
+      )
+    } else if (length(cohort_techcert_entries_dis0() != 0)) {
+      valueBox(
+        # take input number
+        paste0("[", round2(cohort_techcert_ci_lower_dis0(), 2), ", ", round2(cohort_techcert_ci_upper_dis0(), 2), "]"),
+        # add subtitle to explain what it's showing
+        paste0("Confidence intervals"),
+        color = "dark-blue"
+      )
+    } else {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
+    }
+  })
+
 
   # Stop app -------------------------------------------------------------------
 

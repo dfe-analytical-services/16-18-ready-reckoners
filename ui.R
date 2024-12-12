@@ -66,15 +66,15 @@ ui <- function(input, output, session) {
         href = "dfefavicon.png"
       ),
       # Add title for browser tabs
-      tags$title("DfE Shiny Template")
+      tags$title("16-18 Ready Reckoner")
     ),
     use_shiny_title(),
     tags$html(lang = "en"),
     # Add meta description for search engines
     meta() %>%
       meta_general(
-        application_name = "DfE Shiny Template",
-        description = "DfE Shiny Template",
+        application_name = "16-18 Ready Reckoner",
+        description = "16-18 Ready Reckoner",
         robots = "index,follow",
         generator = "R-Shiny",
         subject = "stats development",
@@ -103,40 +103,47 @@ ui <- function(input, output, session) {
         href = "dfe_shiny_gov_style.css"
       )
     ),
-    shinyGovstyle::cookieBanner("DfE R-Shiny dashboard template"),
+    shinyGovstyle::cookieBanner("16-18 Ready Reckoner"),
     shinyGovstyle::header(
       main_text = "",
       main_link = "https://www.gov.uk/government/organisations/department-for-education",
-      secondary_text = "DfE Shiny Template",
+      secondary_text = "16-18 Ready Reckoner",
       logo = "images/DfE_logo_landscape.png",
       logo_width = 150,
       logo_height = 32
     ),
-    shinyGovstyle::banner(
-      "beta banner",
-      "beta",
-      paste0(
-        "This Dashboard is in beta phase and we are still reviewing performance
-        and reliability. "
-      )
-    ),
+    # shinyGovstyle::banner(
+    #   "beta banner",
+    #   "beta",
+    #   paste0(
+    #     "This Dashboard is in beta phase and we are still reviewing performance
+    #     and reliability. ",
+    #     "In case of slowdown or connection issues due to high demand, we have
+    #     produced two instances of this site which can be accessed at the
+    #     following links: ",
+    #     "<a href=", site_primary, " id='link_site_1'>Site 1</a> and ",
+    #     "<a href=", site_overflow, " id='link_site_2'>Site 2</a>."
+    #   )
+    # ),
     shiny::navlistPanel(
       "",
       id = "navlistPanel",
       widths = c(2, 8),
       well = FALSE,
+      homepage_panel(),
       data_upload_panel(),
       data_checking_panel(),
       student_va_panel(),
-      national_chart_panel()
-      # dashboard_panel(),
-      # homepage_panel(),
-      # a11y_panel(),
-      # support_panel(
-      #   team_email = "statistics.development@education.gov.uk",
-      #   repo_name = "https://github.com/dfe-analytical-services/shiny-template",
-      #   form_url = "https://forms.office.com"
-      # )
+      subject_va_panel(),
+      cohort_va_panel(),
+      a11y_panel(),
+      support_panel(
+        team_email = "attainment.statistics@education.gov.uk",
+        repo_name = "https://github.com/dfe-analytical-services/16-18-ready-reckoners",
+        publication_name = "A level and other 16 to 18 results",
+        publication_slug = "a-level-and-other-16-to-18-results"
+        # form_url = "https://forms.office.com"
+      )
     ),
     tags$script(
       src = "script.js"

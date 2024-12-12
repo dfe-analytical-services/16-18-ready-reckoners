@@ -57,6 +57,9 @@ round2 <- function(x, n) {
 }
 
 
+# Function defined for not in -------------------------------------
+`%not_in%` <- purrr::negate(`%in%`)
+
 
 
 
@@ -112,74 +115,16 @@ source("R/read_data.R")
 # -----------------------------------------------------------------------------------------------------------------------------
 # ---- read in the ready reckoner data from the Excel spreadsheet ----
 # -----------------------------------------------------------------------------------------------------------------------------
-data <- func_read_multiplesheets("data/2019_shadow_l3va_step5_outputs.xlsx")
+
+data <- func_read_multiplesheets("data/2019A_l3va_step5_outputs_Rversion.xlsx")
+
+template_data <- read.csv("data/pupil_upload_template.csv")
 
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
-# ---- tidy RR data and sort data types ----
+# ---- other ----
 # -----------------------------------------------------------------------------------------------------------------------------
-
-colnames(data$national_bands) <- to_snake_case(colnames(data$national_bands))
-colnames(data$subject_variance) <- to_snake_case(colnames(data$subject_variance))
-colnames(data$qualification_variance) <- to_snake_case(colnames(data$qualification_variance))
-colnames(data$points_lookup) <- to_snake_case(colnames(data$points_lookup))
-colnames(data$subject_chart) <- to_snake_case(colnames(data$subject_chart))
-colnames(data$qualid_lookup) <- to_snake_case(colnames(data$qualid_lookup))
-colnames(data$gnumber_lookup) <- to_snake_case(colnames(data$gnumber_lookup))
-colnames(data$disadvantaged_variance) <- to_snake_case(colnames(data$disadvantaged_variance))
-
-data$national_bands <- data$national_bands %>%
-  mutate(
-    qual_id = as.character(qual_id)
-  ) %>%
-  rename(
-    avg_prior_x_0 = prior_min,
-    avg_prior_x_21 = prior_max,
-    avg_outcome_y_0 = outcome_min,
-    avg_outcome_y_21 = outcome_max
-  )
-
-colnames(data$national_bands) <- gsub(".*prior_", "", colnames(data$national_bands))
-colnames(data$national_bands) <- gsub(".*outcome_", "", colnames(data$national_bands))
-
-data$subject_variance <- data$subject_variance %>% mutate(
-  qual_id = as.character(qual_id),
-  qual_co_id = as.character(qual_co_id),
-  sublevno = as.character(sublevno),
-  subject_code = as.character(subject_code),
-  exam_cohort = as.character(exam_cohort)
-)
-data$qualification_variance <- data$qualification_variance %>% mutate(
-  qual_co_id = as.character(qual_co_id),
-  sublevno = as.character(sublevno)
-)
-data$points_lookup <- data$points_lookup %>% mutate(
-  qualification_code = as.character(qualification_code)
-)
-data$subject_chart <- data$subject_chart %>% mutate(
-  qual_id = as.character(qual_id),
-  exam_cohort = as.character(exam_cohort),
-  sublevno = as.character(sublevno),
-  subject_code = as.character(subject_code)
-)
-data$qualid_lookup <- data$qualid_lookup %>% mutate(
-  qual_id = as.character(qual_id),
-  qualification_code = as.character(qualification_code),
-  subject_code = as.character(subject_code),
-  size = as.character(size)
-)
-data$gnumber_lookup <- data$gnumber_lookup %>% mutate(
-  qual_id = as.character(qual_id),
-  qualification_number = as.character(qualification_number),
-  qualification_code = as.character(qualification_code),
-  subject_code = as.character(subject_code)
-)
-data$disadvantaged_variance <- data$disadvantaged_variance %>% mutate(
-  qual_id = as.character(qual_id),
-  exam_cohort = as.character(exam_cohort),
-  sublevno = as.character(sublevno)
-)
 
 expandable <- function(inputId, label, contents) {
   govDetails <- shiny::tags$details(

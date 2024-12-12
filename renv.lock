@@ -35,7 +35,7 @@
     },
     "MASS": {
       "Package": "MASS",
-      "Version": "7.3-60",
+      "Version": "7.3-61",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -46,11 +46,11 @@
         "stats",
         "utils"
       ],
-      "Hash": "a56a6365b3fa73293ea8d084be0d9bb0"
+      "Hash": "0cafd6f0500e5deba33be22c46bf6055"
     },
     "Matrix": {
       "Package": "Matrix",
-      "Version": "1.6-3",
+      "Version": "1.7-1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -63,7 +63,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "1d1b6901cf9b6b1b446bc56a7d47efa4"
+      "Hash": "5122bb14d8736372411f955e1b16bc8a"
     },
     "R.cache": {
       "Package": "R.cache",
@@ -138,6 +138,18 @@
         "R"
       ],
       "Hash": "45f0398006e83a5b10b72a90663d8d8c"
+    },
+    "RCurl": {
+      "Package": "RCurl",
+      "Version": "1.98-1.16",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "bitops",
+        "methods"
+      ],
+      "Hash": "ddbdf53d15b47be4407ede6914f56fbb"
     },
     "Rcpp": {
       "Package": "Rcpp",
@@ -215,6 +227,13 @@
         "utils"
       ],
       "Hash": "e84984bf5f12a18628d9a02322128dfd"
+    },
+    "bitops": {
+      "Package": "bitops",
+      "Version": "1.0-9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d972ef991d58c19e6efa71b21f5e144b"
     },
     "brio": {
       "Package": "brio",
@@ -329,13 +348,13 @@
     },
     "codetools": {
       "Package": "codetools",
-      "Version": "0.2-19",
+      "Version": "0.2-20",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
-      "Hash": "c089a619a7fae175d149d89164f8c7d8"
+      "Hash": "61e097f35917d342622f21cdc79c256e"
     },
     "colorspace": {
       "Package": "colorspace",
@@ -418,20 +437,28 @@
     },
     "dfeshiny": {
       "Package": "dfeshiny",
-      "Version": "0.1.1",
+      "Version": "0.5.2",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "dfe-analytical-services",
       "RemoteRepo": "dfeshiny",
-      "RemoteRef": "437c6e4c60b5eb9c1f55333588b65110d47b7ba2",
-      "RemoteSha": "437c6e4c60b5eb9c1f55333588b65110d47b7ba2",
+      "RemoteRef": "main",
+      "RemoteSha": "91f1eb3cbac6e1d2ba64300e22a36c95a73dda25",
       "Requirements": [
+        "R",
+        "RCurl",
+        "checkmate",
+        "glue",
+        "htmltools",
+        "magrittr",
         "shiny",
         "shinyGovstyle",
+        "shinyjs",
+        "stringr",
         "styler"
       ],
-      "Hash": "8b41a1f9eb64dd5bb3ba1b0edf73cb53"
+      "Hash": "7735cc512edb4955f58dfa2ed4307dce"
     },
     "diffobj": {
       "Package": "diffobj",
@@ -865,7 +892,7 @@
     },
     "mgcv": {
       "Package": "mgcv",
-      "Version": "1.9-0",
+      "Version": "1.9-1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -878,7 +905,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "086028ca0460d0c368028d3bda58f31b"
+      "Hash": "110ee9d83b496279960e162ac97764ce"
     },
     "mime": {
       "Package": "mime",
@@ -903,7 +930,7 @@
     },
     "nlme": {
       "Package": "nlme",
-      "Version": "3.1-163",
+      "Version": "3.1-166",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -913,7 +940,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "8d1938040a05566f4f7a14af4feadd6b"
+      "Hash": "ccbb8846be320b627e6aa2b4616a2ded"
     },
     "openssl": {
       "Package": "openssl",
@@ -1463,7 +1490,7 @@
     },
     "testthat": {
       "Package": "testthat",
-      "Version": "3.2.1.1",
+      "Version": "3.2.2",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -1488,7 +1515,7 @@
         "waldo",
         "withr"
       ],
-      "Hash": "3f6e7e5e2220856ff865e4834766bf2b"
+      "Hash": "6773967afbe2f74c87021e72c1bb05c0"
     },
     "tibble": {
       "Package": "tibble",

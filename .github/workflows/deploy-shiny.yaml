@@ -4,9 +4,6 @@ on:
       - main
       - development
   pull-request:
-    branches:
-      - main
-      - development
 
 name: shinyapps.io deploy
 

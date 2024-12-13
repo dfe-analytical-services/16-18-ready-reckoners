@@ -3,7 +3,7 @@ on:
     branches:
       - main
       - development
-  pull-request:
+  pull-request
 
 name: shinyapps.io deploy
 

@@ -21,14 +21,6 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Cache renv packages
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.RENV_PATHS_ROOT }}
-          key: ubuntu-latest-renv-${{ hashFiles('**/renv.lock') }}
-          restore-keys: |
-            ubuntu-latest-renv-
-
       - name: Restore renv snapshot
         shell: Rscript {0}
         run: |

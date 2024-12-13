@@ -1,0 +1,107 @@
+{
+  "input": {
+    "a": 5,
+    "data_source": "National data only",
+    "dropdown_cohort": "A level",
+    "dropdown_qualifications": "Applied GCE AS level",
+    "dropdown_sizes": "0.5",
+    "dropdown_subjects": "Applied ICT",
+    "n": 5,
+    "navlistPanel": "va_cohort_dashboard",
+    "tabsetpanels": "All Students",
+    "upload": null
+  },
+  "output": {
+    "cohort_acad_ci": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_acad_entries": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_acad_va_grade": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_agen_ci": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_agen_entries": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_agen_va_grade": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_alev_ci": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_alev_entries": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_alev_va_grade": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_techcert_ci": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_techcert_entries": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_techcert_va_grade": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_techlev_ci": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_techlev_entries": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "cohort_techlev_va_grade": {
+      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "no_user_data4": "<i class=\"fas fa-triangle-exclamation\" role=\"presentation\" aria-label=\"triangle-exclamation icon\"><\/i> <font color=\"#F46A25\"><b> Please upload your student data <\/b><\/font>"
+  }
+}

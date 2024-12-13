@@ -440,11 +440,11 @@
       "Version": "0.5.2",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
       "RemoteUsername": "dfe-analytical-services",
       "RemoteRepo": "dfeshiny",
       "RemoteRef": "main",
       "RemoteSha": "91f1eb3cbac6e1d2ba64300e22a36c95a73dda25",
+      "RemoteHost": "api.github.com",
       "Requirements": [
         "R",
         "RCurl",
@@ -474,6 +474,18 @@
         "utils"
       ],
       "Hash": "bcaa8b95f8d7d01a5dedfd959ce88ab8"
+    },
+    "diffviewer": {
+      "Package": "diffviewer",
+      "Version": "0.1.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "htmlwidgets",
+        "jsonlite"
+      ],
+      "Hash": "42c3ea48cba4a88987d55e64008d2f3b"
     },
     "digest": {
       "Package": "digest",

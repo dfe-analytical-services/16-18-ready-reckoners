@@ -1,4 +1,5 @@
 library(shinytest2)
+library(diffviewer)
 
 app <- AppDriver$new(name = "basic_load", height = 846, width = 1445, load_timeout = 45 * 1000, timeout = 20 * 1000, wait = TRUE)
 
@@ -9,21 +10,20 @@ app$wait_for_idle(500)
 # They will not cause any failures if there's changes
 
 inputs <- c(
-  "cookieAccept", "cookieLink",
-  "cookieReject", "cookies", "hideAccept", "hideReject",
-  "link_to_app_content_tab",
-  "navlistPanel",
-  "plotly_afterplot-A",
-  "selectArea", "selectBenchLAs", "selectPhase",
-  "tabsetpanels"
+  "navlistPanel", "tabsetpanels",
+  "data_source", "dropdown_cohort", "dropdown_qualifications", "dropdown_sizes",
+  "dropdown_subjects",
+  "a", "n",
+  "upload"
 )
 
 outputs <- c(
-  "boxavgRevBal", "boxavgRevBal_large", "boxavgRevBal_small",
-  "boxpcRevBal", "boxpcRevBal_large", "boxpcRevBal_small",
-  "dropdown_label",
-  "lineRevBal",
-  "colBenchmark"
+  "input_preview",
+  "cohort_check_table", "cohort_infobox",
+  "prioratt_check_table", "prioratt_infobox",
+  "qualid_check_table", "qualid_infobox",
+  "qualification_check_table", "qualification_infobox",
+  "removed_check_table", "removed_infobox"
 )
 
 test_that("App loads", {
@@ -34,8 +34,8 @@ test_that("App loads", {
   )
 })
 
-app$set_inputs(tabsetpanels = "Line chart example")
-test_that("Line chart created", {
+app$set_inputs(navlistPanel = "data_upload_dashboard")
+test_that("Data upload panel opens", {
   # Capture initial values
   app$expect_values(
     input = inputs,
@@ -43,11 +43,29 @@ test_that("Line chart created", {
   )
 })
 
-app$set_inputs(tabsetpanels = "Benchmarking example")
-test_that("Benchmarking panel", {
+app$set_inputs(navlistPanel = "data_check_dashboard")
+test_that("Data check panel opens", {
   # Capture initial values
   app$expect_values(
     input = inputs,
     output = outputs
   )
+})
+
+app$set_inputs(navlistPanel = "va_student_dashboard")
+test_that("VA student panel opens", {
+  # Capture initial values
+  app$expect_values()
+})
+
+app$set_inputs(navlistPanel = "va_subject_dashboard")
+test_that("VA subject panel opens", {
+  # Capture initial values
+  app$expect_values()
+})
+
+app$set_inputs(navlistPanel = "va_cohort_dashboard")
+test_that("VA cohort panel opens", {
+  # Capture initial values
+  app$expect_values()
 })

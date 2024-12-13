@@ -58,14 +58,41 @@ test_that("VA student panel opens", {
   app$expect_values()
 })
 
+va_subject_outputs <- c(
+  "no_user_data3",
+  "subject_entries",
+  "subject_va_grade",
+  "ci"
+)
+
 app$set_inputs(navlistPanel = "va_subject_dashboard")
 test_that("VA subject panel opens", {
   # Capture initial values
-  app$expect_values()
+  app$expect_values(
+    input = inputs,
+    output = va_subject_outputs
+  )
 })
+
+va_cohort_outputs <- c(
+  "no_user_data4",
+  "cohort_alev_entries", "cohort_alev_va_grade", "cohort_alev_ci",
+  "cohort_acad_entries", "cohort_acad_va_grade", "cohort_acad_ci",
+  "cohort_agen_entries", "cohort_agen_va_grade", "cohort_agen_ci",
+  "cohort_techlev_entries", "cohort_techlev_va_grade", "cohort_techlev_ci",
+  "cohort_techcert_entries", "cohort_techcert_va_grade", "cohort_techcert_ci",
+  "cohort_alev_entries_dis", "cohort_alev_va_grade_dis", "cohort_alev_ci_dis",
+  "cohort_acad_entries_dis", "cohort_acad_va_grade_dis", "cohort_acad_ci_dis",
+  "cohort_agen_entries_dis", "cohort_agen_va_grade_dis", "cohort_agen_ci_dis",
+  "cohort_techlev_entries_dis", "cohort_techlev_va_grade_dis", "cohort_techlev_ci_dis",
+  "cohort_techcert_entries_dis", "cohort_techcert_va_grade_dis", "cohort_techcert_ci_dis"
+)
 
 app$set_inputs(navlistPanel = "va_cohort_dashboard")
 test_that("VA cohort panel opens", {
   # Capture initial values
-  app$expect_values()
+  app$expect_values(
+    input = inputs,
+    output = va_cohort_outputs
+  )
 })

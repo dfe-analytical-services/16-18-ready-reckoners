@@ -1,13 +1,22 @@
 {
   "input": {
     "a": 5,
+    "cookieAccept": 0,
+    "cookieLink": 0,
+    "cookieReject": 0,
+    "cookies": {
+
+    },
     "data_source": "National data only",
     "dropdown_cohort": "A level",
     "dropdown_qualifications": "Applied GCE AS level",
     "dropdown_sizes": "0.5",
     "dropdown_subjects": "Applied ICT",
+    "hideAccept": 0,
+    "hideReject": 0,
+    "link_to_user_upload_tab": 0,
     "n": 5,
-    "navlistPanel": "data_check_dashboard",
+    "navlistPanel": "va_student_dashboard",
     "tabsetpanels": "All Students",
     "upload": null
   },
@@ -30,12 +39,22 @@
       "NULL",
       "c(\"shiny.silent.error\", \"validation\")"
     ],
+    "no_user_data1": "<i class=\"fas fa-triangle-exclamation\" role=\"presentation\" aria-label=\"triangle-exclamation icon\"><\/i> <font color=\"#F46A25\"><b> Please upload your student data <\/b><\/font>",
+    "no_user_data2": "<i class=\"fas fa-triangle-exclamation\" role=\"presentation\" aria-label=\"triangle-exclamation icon\"><\/i> <font color=\"#F46A25\"><b> Please upload your student data <\/b><\/font>",
     "prioratt_check_table": [
       "",
       "NULL",
       "c(\"shiny.silent.error\", \"validation\")"
     ],
     "prioratt_infobox": {
+      "message": "",
+      "call": "NULL",
+      "type": [
+        "shiny.silent.error",
+        "validation"
+      ]
+    },
+    "pupil_va_download2": {
       "message": "",
       "call": "NULL",
       "type": [
@@ -76,6 +95,32 @@
         "shiny.silent.error",
         "validation"
       ]
+    },
+    "removed_table": [
+      "",
+      "NULL",
+      "c(\"shiny.silent.error\", \"validation\")"
+    ],
+    "student_va_scores": [
+      "",
+      "NULL",
+      "c(\"shiny.silent.error\", \"validation\")"
+    ],
+    "subject_check_table": [
+      "",
+      "NULL",
+      "c(\"shiny.silent.error\", \"validation\")"
+    ],
+    "subject_infobox": {
+      "message": "",
+      "call": "NULL",
+      "type": [
+        "shiny.silent.error",
+        "validation"
+      ]
     }
+  },
+  "export": {
+
   }
 }

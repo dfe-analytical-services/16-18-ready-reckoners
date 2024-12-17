@@ -28,6 +28,17 @@ server <- function(input, output, session) {
   hide(id = "loading-content", anim = TRUE, animType = "fade")
   show("app-content")
 
+  output$cookies_status <- dfeshiny::cookies_banner_server(
+    input_cookies = shiny::reactive(input$cookies),
+    parent_session = session,
+    google_analytics_key = google_analytics_key
+  )
+
+  dfeshiny::cookies_panel_server(
+    input_cookies = shiny::reactive(input$cookies),
+    google_analytics_key = google_analytics_key
+  )
+
   # The template uses bookmarking to store input choices in the url. You can
   # exclude specific inputs (for example extra info created for a datatable
   # or plotly chart) using the list below, but it will need updating to match
@@ -75,104 +86,6 @@ server <- function(input, output, session) {
       )
     }
   })
-
-  observeEvent(input$cookies, {
-    if (!is.null(input$cookies)) {
-      if (!("dfe_analytics" %in% names(input$cookies))) {
-        shinyjs::show(id = "cookieMain")
-      } else {
-        shinyjs::hide(id = "cookieMain")
-        msg <- list(
-          name = "dfe_analytics",
-          value = input$cookies$dfe_analytics
-        )
-        session$sendCustomMessage("analytics-consent", msg)
-        if ("cookies" %in% names(input)) {
-          if ("dfe_analytics" %in% names(input$cookies)) {
-            if (input$cookies$dfe_analytics == "denied") {
-              ga_msg <- list(name = paste0("_ga_", google_analytics_key))
-              session$sendCustomMessage("cookie-remove", ga_msg)
-            }
-          }
-        }
-      }
-    } else {
-      shinyjs::hide(id = "cookieMain")
-    }
-  })
-
-  # Need these set of observeEvent to create a path through the cookie banner
-  observeEvent(input$cookieAccept, {
-    msg <- list(
-      name = "dfe_analytics",
-      value = "granted"
-    )
-    session$sendCustomMessage("cookie-set", msg)
-    session$sendCustomMessage("analytics-consent", msg)
-    shinyjs::show(id = "cookieAcceptDiv")
-    shinyjs::hide(id = "cookieMain")
-  })
-
-  observeEvent(input$cookieReject, {
-    msg <- list(
-      name = "dfe_analytics",
-      value = "denied"
-    )
-    session$sendCustomMessage("cookie-set", msg)
-    session$sendCustomMessage("analytics-consent", msg)
-    shinyjs::show(id = "cookieRejectDiv")
-    shinyjs::hide(id = "cookieMain")
-  })
-
-  observeEvent(input$hideAccept, {
-    shinyjs::toggle(id = "cookieDiv")
-  })
-
-  observeEvent(input$hideReject, {
-    shinyjs::toggle(id = "cookieDiv")
-  })
-
-  observeEvent(input$remove, {
-    shinyjs::toggle(id = "cookieMain")
-    msg <- list(name = "dfe_analytics", value = "denied")
-    session$sendCustomMessage("cookie-remove", msg)
-    session$sendCustomMessage("analytics-consent", msg)
-    print(input$cookies)
-  })
-
-  cookies_data <- reactive({
-    input$cookies
-  })
-
-  output$cookie_status <- renderText({
-    cookie_text_stem <- "To better understand the reach of our dashboard tools,
-    this site uses cookies to identify numbers of unique users as part of Google
-    Analytics. You have chosen to"
-    cookie_text_tail <- "the use of cookies on this website."
-    if ("cookies" %in% names(input)) {
-      if ("dfe_analytics" %in% names(input$cookies)) {
-        if (input$cookies$dfe_analytics == "granted") {
-          paste(cookie_text_stem, "accept", cookie_text_tail)
-        } else {
-          paste(cookie_text_stem, "reject", cookie_text_tail)
-        }
-      }
-    } else {
-      "Cookies consent has not been confirmed."
-    }
-  })
-
-  observeEvent(input$cookieLink, {
-    # Need to link here to where further info is located.  You can
-    # updateTabsetPanel to have a cookie page for instance
-    updateTabsetPanel(session, "navlistPanel",
-      selected = "Support and feedback"
-    )
-  })
-
-
-  #  output$cookie_status <- renderText(as.character(input$cookies))
-
 
   observeEvent(input$link_to_user_upload_tab, {
     updateTabsetPanel(session, "navlistPanel", selected = "data_upload_dashboard")

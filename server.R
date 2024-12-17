@@ -184,11 +184,12 @@ server <- function(input, output, session) {
   # -----------------------------------------------------------------------------------------------------------------------------
 
   expected_column_names <- c(
-    "unique_identifier", "forename", "surname", "gender",
-    "cohort_code", "cohort_name",
-    "qualification_code", "qualification_name",
-    "subject_code", "subject_name", "size", "qual_id",
-    "prior_attainment", "actual_points", "disadvantaged_status"
+    "Forename", "Surname", "Sex",
+    "Qualification code", "Qualification name",
+    "Subject code", "Subject name",
+    "Size", "Cohort",
+    "Prior attainment", "Estimated points (new points)", "Actual points (new points)", "Value Added score",
+    "QUAL_ID", "Disadvantaged status", "CYPMD ID", "DfE number"
   )
 
 
@@ -214,30 +215,48 @@ server <- function(input, output, session) {
 
 
     # 3. validation test 3: check numerical unique identifiers
-    unique_identifier_type_check <- student_data %>%
-      mutate(unique_identifier = as.numeric(unique_identifier)) %>%
-      filter(is.na(unique_identifier))
-
-    validate(
-      need(nrow(unique_identifier_type_check) == 0, "Non-numerical unique identifiers detected in pupil data. Please ammend the unique identifiers used to only include numerical values and re-upload.")
-    )
-
-    # 4. validation test 4: check unique identifiers are unique
-    unique_identifier_value_check <- student_data %>% distinct(unique_identifier)
-
-    validate(
-      need(nrow(student_data) == nrow(unique_identifier_value_check), "Duplicate unique identifiers detected in pupil data. Please ammend the unique identifiers used to only include unique numerical values and re-upload.")
-    )
+    # unique_identifier_type_check <- student_data %>%
+    #   mutate(unique_identifier = as.numeric(unique_identifier)) %>%
+    #   filter(is.na(unique_identifier))
+    #
+    # validate(
+    #   need(nrow(unique_identifier_type_check) == 0, "Non-numerical unique identifiers detected in pupil data. Please amend the unique identifiers used to only include numerical values and re-upload.")
+    # )
+    #
+    # # 4. validation test 4: check unique identifiers are unique
+    # unique_identifier_value_check <- student_data %>% distinct(unique_identifier)
+    #
+    # validate(
+    #   need(nrow(student_data) == nrow(unique_identifier_value_check), "Duplicate unique identifiers detected in pupil data. Please amend the unique identifiers used to only include unique numerical values and re-upload.")
+    # )
 
 
     # 5. if validation test 2 or 3 fails the code will exit, but if they pass the code will continue to return the pupil data
-    student_data <- student_data %>% mutate(
-      qualification_code = as.character(qualification_code),
-      subject_code = as.character(subject_code),
-      qual_id = as.character(qual_id),
-      size = as.character(size),
-      disadvantaged_status = as.integer(disadvantaged_status)
-    )
+    student_data <- student_data %>%
+      rename_with(., ~ to_snake_case(.x)) %>%
+      rename(
+        cohort_name = cohort,
+        actual_points = actual_points_new_points,
+        estimated_points_user_input = estimated_points_new_points,
+        value_added_score_user_input = value_added_score
+      ) %>%
+      mutate(
+        qualification_code = as.character(qualification_code),
+        subject_code = as.character(subject_code),
+        qual_id = as.character(qual_id),
+        size = as.character(size),
+        disadvantaged_status = as.integer(disadvantaged_status),
+        row_id = row_number(),
+        cohort_code = case_when(
+          cohort_name == "A level" ~ "1",
+          cohort_name == "Academic" ~ "2",
+          cohort_name == "Applied general" ~ "3",
+          qualification_code == "699" ~ "4",
+          cohort_name == "Tech level" ~ "5",
+          cohort_name == "Technical certificate" ~ "6",
+          TRUE ~ "unknown"
+        )
+      )
 
     return(student_data)
   })
@@ -342,7 +361,7 @@ server <- function(input, output, session) {
     req(user_data())
 
     user_data() %>%
-      select(unique_identifier) %>%
+      select(row_id) %>%
       max()
   })
 
@@ -351,12 +370,12 @@ server <- function(input, output, session) {
     req(user_data())
 
     user_data() %>%
-      filter(cohort_code == 1) %>%
+      filter(cohort_code == "1") %>%
       mutate(
-        cohort_code = 2,
+        cohort_code = "2",
         cohort_name = "Academic",
         qual_id = paste0(cohort_code, substr(qual_id, 2, nchar(qual_id))),
-        unique_identifier = row_number() + user_data_max_unique_id()
+        row_id = row_number() + user_data_max_unique_id()
       ) %>%
       bind_rows(user_data())
   })
@@ -401,21 +420,21 @@ server <- function(input, output, session) {
 
     user_data_with_lookup() %>%
       filter(qual_id == "Removed") %>%
-      select(unique_identifier, cohort_code, qualification_code, subject_code, size)
+      select(row_id, cohort_code, qualification_code, subject_code, size)
   })
 
   removed_check_summary <- reactive({
     req(removed_check())
 
     removed_summary <- removed_check() %>%
-      select(-unique_identifier) %>%
+      select(-row_id) %>%
       count(pick(everything())) %>%
       rename(
         "User cohort code" = cohort_code,
         "User qualification code" = qualification_code,
         "User subject code" = subject_code,
         "User size" = size,
-        "Number of rows updated" = n
+        "Number of rows removed" = n
       )
   })
 
@@ -459,11 +478,11 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     cohort_differences <- setdiff(
-      user_data_academic() %>% select(unique_identifier, cohort_name, cohort_code),
-      user_data_with_lookup() %>% select(unique_identifier, cohort_name, cohort_code)
+      user_data_academic() %>% select(row_id, cohort_name, cohort_code),
+      user_data_with_lookup() %>% select(row_id, cohort_name, cohort_code)
     ) %>%
-      left_join(user_data_with_lookup() %>% select(unique_identifier, cohort_name, cohort_code),
-        by = "unique_identifier"
+      left_join(user_data_with_lookup() %>% select(row_id, cohort_name, cohort_code),
+        by = "row_id"
       ) %>%
       filter(cohort_name.y != "Removed") %>%
       rename(
@@ -478,7 +497,7 @@ server <- function(input, output, session) {
     req(cohort_check_differences())
 
     cohort_differences_summary <- cohort_check_differences() %>%
-      select(-unique_identifier) %>%
+      select(-row_id) %>%
       count(pick(everything())) %>%
       rename("Number of rows updated" = n)
   })
@@ -524,11 +543,11 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     qualification_differences <- setdiff(
-      user_data_academic() %>% select(unique_identifier, qualification_name, qualification_code),
-      user_data_with_lookup() %>% select(unique_identifier, qualification_name, qualification_code)
+      user_data_academic() %>% select(row_id, qualification_name, qualification_code),
+      user_data_with_lookup() %>% select(row_id, qualification_name, qualification_code)
     ) %>%
-      left_join(user_data_with_lookup() %>% select(unique_identifier, qualification_name, qualification_code),
-        by = "unique_identifier"
+      left_join(user_data_with_lookup() %>% select(row_id, qualification_name, qualification_code),
+        by = "row_id"
       ) %>%
       filter(qualification_name.y != "Removed") %>%
       rename(
@@ -543,7 +562,7 @@ server <- function(input, output, session) {
     req(qualification_check_differences())
 
     qualification_differences_summary <- qualification_check_differences() %>%
-      select(-unique_identifier) %>%
+      select(-row_id) %>%
       count(pick(everything())) %>%
       rename("Number of rows updated" = n)
   })
@@ -589,11 +608,11 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     subject_differences <- setdiff(
-      user_data_academic() %>% select(unique_identifier, subject_name, subject_code),
-      user_data_with_lookup() %>% select(unique_identifier, subject_name, subject_code)
+      user_data_academic() %>% select(row_id, subject_name, subject_code),
+      user_data_with_lookup() %>% select(row_id, subject_name, subject_code)
     ) %>%
-      left_join(user_data_with_lookup() %>% select(unique_identifier, subject_name, subject_code),
-        by = "unique_identifier"
+      left_join(user_data_with_lookup() %>% select(row_id, subject_name, subject_code),
+        by = "row_id"
       ) %>%
       filter(subject_name.y != "Removed") %>%
       rename(
@@ -608,7 +627,7 @@ server <- function(input, output, session) {
     req(subject_check_differences())
 
     subject_differences_summary <- subject_check_differences() %>%
-      select(-unique_identifier) %>%
+      select(-row_id) %>%
       count(pick(everything())) %>%
       rename("Number of rows updated" = n)
   })
@@ -654,11 +673,11 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     qualid_differences <- setdiff(
-      user_data_academic() %>% select(unique_identifier, qual_id),
-      user_data_with_lookup() %>% select(unique_identifier, qual_id)
+      user_data_academic() %>% select(row_id, qual_id),
+      user_data_with_lookup() %>% select(row_id, qual_id)
     ) %>%
-      left_join(user_data_with_lookup() %>% select(unique_identifier, qual_id),
-        by = "unique_identifier"
+      left_join(user_data_with_lookup() %>% select(row_id, qual_id),
+        by = "row_id"
       ) %>%
       filter(qual_id.y != "Removed") %>%
       rename(
@@ -671,7 +690,7 @@ server <- function(input, output, session) {
     req(qualid_check_differences())
 
     qualid_differences_summary <- qualid_check_differences() %>%
-      select(-unique_identifier) %>%
+      select(-row_id) %>%
       count(pick(everything())) %>%
       rename("Number of rows updated" = n)
   })
@@ -736,16 +755,17 @@ server <- function(input, output, session) {
     req(prioratt_exceeds_upper())
     req(prioratt_exceeds_lower())
 
-    prioratt_check_differences <- rbind(prioratt_exceeds_upper(), prioratt_exceeds_lower())
+    prioratt_check_differences <- rbind(prioratt_exceeds_upper(), prioratt_exceeds_lower()) %>%
+      arrange(row_id)
   })
 
   prioratt_check_summary <- reactive({
     req(prioratt_check_differences())
 
     prioratt_differences_summary <- prioratt_check_differences() %>%
-      select(unique_identifier, qual_id, prior_attainment, x_21, x_0) %>%
+      select(row_id, qual_id, prior_attainment, x_21, x_0) %>%
       rename(
-        "Pupil unique identifier" = unique_identifier,
+        "Pupil unique identifier" = row_id,
         "User qualification ID" = qual_id,
         "Pupil prior attainment" = prior_attainment,
         "Value added model max prior attainment" = x_21,
@@ -767,7 +787,7 @@ server <- function(input, output, session) {
   })
 
   output$prioratt_check_download <- downloadHandler(
-    filename = "qualid_check.csv",
+    filename = "prioratt_check.csv",
     content = function(file) {
       write.csv(prioratt_check_differences(), file, row.names = FALSE)
     }
@@ -800,8 +820,8 @@ server <- function(input, output, session) {
         cohort_name != "Removed",
         qualification_name != "Removed",
         subject_name != "Removed",
-        unique_identifier %not_in% c(prioratt_exceeds_upper()$unique_identifier),
-        unique_identifier %not_in% c(prioratt_exceeds_lower()$unique_identifier)
+        row_id %not_in% c(prioratt_exceeds_upper()$row_id),
+        row_id %not_in% c(prioratt_exceeds_lower()$row_id)
       )
 
     return(final_data)
@@ -815,13 +835,21 @@ server <- function(input, output, session) {
   # ---- VA DERIVATIONS - BY STUDENT - OUTPUT IN THE STUDENT VALUE ADDED TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
+  common_column_names <- c(
+    "row_id", "forename", "surname", "sex",
+    "cohort_code", "cohort_name",
+    "qualification_code", "qualification_name",
+    "subject_code", "subject_name", "size", "qual_id",
+    "prior_attainment", "actual_points", "disadvantaged_status"
+  )
+
   minpositive <- function(x) min(x[x >= 0])
 
   ## 1. determine the upper and lower bands each pupil prior attainment falls between
 
   ## 1.a. pivot the user data into long format
   ## 1.b calculate the difference between pupil prior attainment and each x band
-  student_pava_bands <- reactive({
+  student_pava_bands_full <- reactive({
     req(user_data_final())
 
     user_data_final() %>%
@@ -837,20 +865,68 @@ server <- function(input, output, session) {
   })
 
 
+  student_pava_bands <- reactive({
+    req(user_data_final())
+
+    user_data_final() %>%
+      select(-c(qualification_name, subject_name, cohort_name)) %>%
+      left_join(data$national_bands, by = "qual_id")
+  })
+
+
   ## 1.c. identify which band has the smallest positive difference and set to TRUE
   ## 1.d. in some instances there may be multiple lower bands (all with the same value) so we want to select the highest possible band to be lower_band
   ## 1.e. we can then define upper_band to be lower_band plus 1
-  pupil_pava_bands_flags <- reactive({
+
+
+  pupil_pava_bands_flags_pt1 <- reactive({
     req(student_pava_bands())
 
     student_pava_bands() %>%
-      group_by(unique_identifier) %>%
+      filter(prior_attainment == x_21) %>%
+      pivot_longer(
+        cols = starts_with(c("x", "y")),
+        cols_vary = "slowest",
+        names_to = c(".value", "band"),
+        names_sep = "_"
+      ) %>%
+      mutate(difference_prior_x = prior_attainment - x) %>%
+      group_by(row_id) %>%
+      mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
+      filter(smallest_positive_difference == TRUE) %>%
+      slice_min(as.numeric(band)) %>%
+      select(row_id, upper_band = band) %>%
+      mutate(lower_band = as.character(as.numeric(upper_band) - 1)) %>%
+      ungroup()
+  })
+
+  pupil_pava_bands_flags_pt2 <- reactive({
+    req(student_pava_bands())
+
+    student_pava_bands() %>%
+      filter(prior_attainment != x_21) %>%
+      pivot_longer(
+        cols = starts_with(c("x", "y")),
+        cols_vary = "slowest",
+        names_to = c(".value", "band"),
+        names_sep = "_"
+      ) %>%
+      mutate(difference_prior_x = prior_attainment - x) %>%
+      group_by(row_id) %>%
       mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
       filter(smallest_positive_difference == TRUE) %>%
       slice_max(as.numeric(band)) %>%
-      select(unique_identifier, lower_band = band) %>%
+      select(row_id, lower_band = band) %>%
       mutate(upper_band = as.character(as.numeric(lower_band) + 1)) %>%
       ungroup()
+  })
+
+
+  pupil_pava_bands_flags <- reactive({
+    req(pupil_pava_bands_flags_pt1())
+    req(pupil_pava_bands_flags_pt2())
+
+    bind_rows(pupil_pava_bands_flags_pt1(), pupil_pava_bands_flags_pt2())
   })
 
 
@@ -859,11 +935,11 @@ server <- function(input, output, session) {
   pupil_pava_bands_filtered <- reactive({
     req(pupil_pava_bands_flags())
 
-    student_pava_bands() %>%
-      inner_join(pupil_pava_bands_flags(), by = "unique_identifier") %>%
+    student_pava_bands_full() %>%
+      inner_join(pupil_pava_bands_flags(), by = "row_id") %>%
       filter(band == lower_band | band == upper_band) %>%
       mutate(band = as.numeric(band)) %>%
-      arrange(unique_identifier, band)
+      arrange(row_id, band)
   })
 
 
@@ -872,7 +948,7 @@ server <- function(input, output, session) {
     req(pupil_pava_bands_filtered())
 
     pupil_pava_bands_filtered() %>%
-      group_by(unique_identifier) %>%
+      group_by(row_id) %>%
       mutate(numbering = row_number()) %>%
       mutate(band_position = case_when(
         numbering == 1 ~ "lower",
@@ -891,7 +967,7 @@ server <- function(input, output, session) {
         estimated_points = (delta_y / delta_x) * (prior_attainment - x_lower) + y_lower,
         value_added = actual_points - estimated_points
       ) %>%
-      select(all_of(expected_column_names), estimated_points, value_added) %>%
+      select(all_of(common_column_names), estimated_points, value_added) %>%
       left_join(data$subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
       mutate(
         value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
@@ -1071,7 +1147,7 @@ server <- function(input, output, session) {
 
     pupil_pava_bands_filtered() %>%
       filter(disadvantaged_status == 1) %>%
-      group_by(unique_identifier) %>%
+      group_by(row_id) %>%
       mutate(numbering = row_number()) %>%
       mutate(band_position = case_when(
         numbering == 1 ~ "lower",
@@ -1090,7 +1166,7 @@ server <- function(input, output, session) {
         estimated_points = (delta_y / delta_x) * (prior_attainment - x_lower) + y_lower,
         value_added = actual_points - estimated_points
       ) %>%
-      select(all_of(expected_column_names), estimated_points, value_added) %>%
+      select(all_of(common_column_names), estimated_points, value_added) %>%
       left_join(data$disadvantaged_subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
       mutate(
         value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),

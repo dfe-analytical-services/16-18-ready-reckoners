@@ -137,12 +137,16 @@ ui <- function(input, output, session) {
       subject_va_panel(),
       cohort_va_panel(),
       a11y_panel(),
-      support_panel(
-        team_email = "attainment.statistics@education.gov.uk",
-        repo_name = "https://github.com/dfe-analytical-services/16-18-ready-reckoners",
-        publication_name = "A level and other 16 to 18 results",
-        publication_slug = "a-level-and-other-16-to-18-results"
-        # form_url = "https://forms.office.com"
+      shiny::tabPanel(
+        value = "support_panel",
+        "Support and feedback",
+        support_panel(
+          team_email = "attainment.statistics@education.gov.uk",
+          repo_name = "https://github.com/dfe-analytical-services/16-18-ready-reckoners",
+          publication_name = "A level and other 16 to 18 results",
+          publication_slug = "a-level-and-other-16-to-18-results"
+          # form_url = "https://forms.office.com"
+        )
       )
     ),
     tags$script(

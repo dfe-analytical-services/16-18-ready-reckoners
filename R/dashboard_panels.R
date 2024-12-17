@@ -372,10 +372,10 @@ data_checking_panel <- function() {
         column(
           width = 6,
           h2("6. Pupil prior attainment check:"),
-          p("This check confirms the pupil prior attainment entered by the user is lower than the maximum prior attainment used in the value added model for that subject."),
-          p("The table below will reveal any pupils in the user data which have a prior attainment exceeding its respective value added model.
+          p("This check confirms the pupil prior attainment entered by the user is within the range of prior attainments used in the value added model for that subject."),
+          p("The table below will reveal any pupils in the user data which have a prior attainment higher, or lower, than its respective value added model.
             These pupils will be removed from the data.
-            To include the pupils below, please adjust the user data such that these pupils do not have a prior attainment exceeding the maximum as shown in the table and re-upload the data.
+            To include the pupils below, please adjust the user data such that these pupils have a prior attainment which falls within the limits shown in the table and re-upload the data.
             The additional download will provide more details."),
           DTOutput("prioratt_check_table")
         ),

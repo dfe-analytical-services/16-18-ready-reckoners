@@ -118,7 +118,7 @@ source("R/read_data.R")
 
 data <- func_read_multiplesheets("data/2019A_l3va_step5_outputs_Rversion.xlsx")
 
-template_data <- read.csv("data/pupil_upload_template.csv")
+template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
 
 
 

@@ -1,129 +1,38 @@
-if (interactive()) {
-  options(device.ask.default = FALSE)
-
-  ui <- fluidPage(
-    checkboxGroupInput("in1", "Check some letters", choices = head(LETTERS)),
-    selectizeInput("in2", "Select a state", choices = c("", state.name)),
-    plotOutput("plot")
-  )
-
-  server <- function(input, output) {
-    output$plot <- renderPlot({
-      validate(
-        need(input$in1, "Check at least one letter!"),
-        need(input$in2 != "", "Please choose a state.")
-      )
-      plot(1:10, main = paste(c(input$in1, input$in2), collapse = ", "))
-    })
-  }
-
-  shinyApp(ui, server)
-}
-
-
-
-
-
-test_data <- read.csv("//lonnetapp01/16-18ValueAdded/L3VA development/KT_L3VA/shadow_user_test.csv")
+test_data <- read.csv("data/data.csv")
 
 test_data <- test_data %>%
+  rename_with(., ~ to_snake_case(.x)) %>%
+  rename(
+    cohort_name = cohort,
+    actual_points = actual_points_new_points,
+    estimated_points_user_input = estimated_points_new_points,
+    value_added_score_user_input = value_added_score
+  ) %>%
   mutate(
-    qual_id = as.character(qual_id),
     qualification_code = as.character(qualification_code),
     subject_code = as.character(subject_code),
-    size = as.character(size)
+    qual_id = as.character(qual_id),
+    size = as.character(size),
+    disadvantaged_status = as.integer(disadvantaged_status),
+    row_id = row_number(),
+    cohort_code = case_when(
+      cohort_name == "A level" ~ "1",
+      cohort_name == "Academic" ~ "2",
+      cohort_name == "Applied general" ~ "3",
+      qualification_code == "699" ~ "4",
+      cohort_name == "Tech level" ~ "5",
+      cohort_name == "Technical certificate" ~ "6",
+      TRUE ~ "unknown"
+    )
   )
 
 
 
-test_data_lookup <- test_data %>%
-  select(-c(qual_id, cohort_name, qualification_name, subject_name)) %>%
-  left_join(
-    data$qualid_lookup %>% select(
-      qual_id,
-      cohort_code, cohort_name,
-      qualification_code, qualification_name,
-      subject_code, subject_name,
-      size
-    ),
-    by = c("cohort_code", "qualification_code", "subject_code", "size")
-  )
 
-
-
-
-
-
-
-
-## check for different cohort names
-cohort_differences <- setdiff(test_data %>% select(unique_identifier, cohort_name, cohort_code), test_data_lookup %>% select(unique_identifier, cohort_name, cohort_code)) %>%
-  left_join(test_data_lookup %>% select(unique_identifier, cohort_name, cohort_code),
-    by = "unique_identifier"
-  ) %>%
-  rename(
-    "User cohort name" = cohort_name.x,
-    "User cohort code" = cohort_code.x,
-    "Updated cohort name" = cohort_name.y,
-    "Updated cohort code" = cohort_code.y,
-  )
-
-cohort_differences_summary <- cohort_differences %>%
-  select(-unique_identifier) %>%
-  count(pick(everything())) %>%
-  rename("Number of rows updated" = n)
-
-
-
-## check for different qualification names:
-
-cohort_differences_summary %>% count()
-
-
-
-## check for different qual_id
-setdiff(test_data %>% select(unique_identifier, qual_id), test_data_lookup %>% select(unique_identifier, qual_id)) %>%
-  left_join(test_data_lookup %>% select(unique_identifier, qual_id),
-    by = "unique_identifier"
-  )
-
-
-
-## check for different qualids
-qualid_differences <- setdiff(test_data %>% select(unique_identifier, qual_id), test_data_lookup %>% select(unique_identifier, qual_id)) %>%
-  left_join(test_data_lookup %>% select(unique_identifier, qual_id),
-    by = "unique_identifier"
-  ) %>%
-  rename(
-    "User qualid" = qual_id.x,
-    "Updated qualid" = qual_id.y
-  )
-
-qual_id_differences_summary <- qualid_differences %>%
-  select(-unique_identifier) %>%
-  count(pick(everything())) %>%
-  rename("Number of rows updated" = n)
-
-
-
-# %>%
-rename_with(., ~ paste0(.x, "_user"), ends_with(".x"))
-
-
-
-rename_with(iris, toupper, starts_with("Petal"))
-
-
-
-
-# join on pava bands
-
-
-### good version
 
 minpositive <- function(x) min(x[x >= 0])
 
-pupil_pava_bands <- test_data %>%
+pupil_pava_bands_full <- test_data %>%
   select(-c(qualification_name, subject_name, cohort_name)) %>%
   left_join(data$national_bands, by = "qual_id") %>%
   pivot_longer(
@@ -134,53 +43,76 @@ pupil_pava_bands <- test_data %>%
   ) %>%
   mutate(difference_prior_x = prior_attainment - x)
 
-## 1.b. in some instances there may be multiple lower bands (all with the same value) so we want to select the highest possible band to be lower_band
-## 1.c. we can then define upper_band to be lower_band plus 1
-pupil_pava_bands_flags <- pupil_pava_bands %>%
-  group_by(unique_identifier) %>%
+
+
+
+pupil_pava_bands <- test_data %>%
+  select(-c(qualification_name, subject_name, cohort_name)) %>%
+  left_join(data$national_bands, by = "qual_id")
+
+
+
+## 1.c. identify which band has the smallest positive difference and set to TRUE
+## 1.d. in some instances there may be multiple lower bands (all with the same value) so we want to select the highest possible band to be lower_band
+## 1.e. we can then define upper_band to be lower_band plus 1
+
+
+
+
+pupil_pava_bands_flags_pt1 <- pupil_pava_bands %>%
+  filter(prior_attainment == x_21) %>%
+  pivot_longer(
+    cols = starts_with(c("x", "y")),
+    cols_vary = "slowest",
+    names_to = c(".value", "band"),
+    names_sep = "_"
+  ) %>%
+  mutate(difference_prior_x = prior_attainment - x) %>%
+  group_by(row_id) %>%
+  mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
+  filter(smallest_positive_difference == TRUE) %>%
+  slice_min(as.numeric(band)) %>%
+  select(row_id, upper_band = band) %>%
+  mutate(lower_band = as.character(as.numeric(upper_band) - 1)) %>%
+  ungroup()
+
+
+
+
+pupil_pava_bands_flags_pt2 <- pupil_pava_bands %>%
+  filter(prior_attainment != x_21) %>%
+  pivot_longer(
+    cols = starts_with(c("x", "y")),
+    cols_vary = "slowest",
+    names_to = c(".value", "band"),
+    names_sep = "_"
+  ) %>%
+  mutate(difference_prior_x = prior_attainment - x) %>%
+  group_by(row_id) %>%
   mutate(smallest_positive_difference = difference_prior_x == minpositive(difference_prior_x)) %>%
   filter(smallest_positive_difference == TRUE) %>%
   slice_max(as.numeric(band)) %>%
-  select(unique_identifier, lower_band = band) %>%
+  select(row_id, lower_band = band) %>%
   mutate(upper_band = as.character(as.numeric(lower_band) + 1)) %>%
   ungroup()
 
-## 1.d.
-pupil_pava_bands_filtered <- pupil_pava_bands %>%
-  inner_join(pupil_pava_bands_flags, by = "unique_identifier") %>%
+
+
+
+
+pupil_pava_bands_flags <- bind_rows(pupil_pava_bands_flags_pt1, pupil_pava_bands_flags_pt2)
+
+
+
+## 1.f. join the two tables and filter band to only include lower and upper band values
+## 1.g. this should leave two rows per pupil, with the lower and upper x and y values from the pava
+
+
+pupil_pava_bands_filtered <- pupil_pava_bands_full %>%
+  inner_join(pupil_pava_bands_flags, by = "row_id") %>%
   filter(band == lower_band | band == upper_band) %>%
   mutate(band = as.numeric(band)) %>%
-  arrange(unique_identifier, band)
-
-
-
-
-
-
-pupil_pava_bands_filtered1 <- pupil_pava_bands
-
-
-pupil_pava_bands_filtered2 <- pupil_pava_bands %>%
-  inner_join(pupil_pava_bands_flags, by = "unique_identifier")
-
-
-pupil_pava_bands_filtered3 <- pupil_pava_bands %>%
-  left_join(pupil_pava_bands_flags, by = "unique_identifier")
-
-
-differences <- setdiff(pupil_pava_bands_filtered3, pupil_pava_bands_filtered2) %>%
-  select(qual_id) %>%
-  distinct()
-
-options(scipen = 999)
-
-
-
-
-
-
-
-
+  arrange(row_id, band)
 
 
 
@@ -188,6 +120,10 @@ options(scipen = 999)
 
 
 pupil_pava_bands %>% distinct(unique_identifier)
+
+
+
+
 
 
 expected_column_names <- c(
@@ -326,22 +262,3 @@ join_columns <- with_pava_lower[, !names(with_pava_lower) %in% c("band", "x", "y
 
 combined <- with_pava_lower %>%
   full_join(with_pava_upper, by = join_columns)
-
-
-pivot_longer(
-  cols = starts_with("x"),
-  names_to = "x_band",
-  names_prefix = "x_",
-  values_to = "x_value",
-  values_drop_na = TRUE
-)
-
-billboard
-billboard %>%
-  pivot_longer(
-    cols = starts_with("wk"),
-    names_to = "week",
-    names_prefix = "wk",
-    values_to = "rank",
-    values_drop_na = TRUE
-  )

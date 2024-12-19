@@ -105,7 +105,7 @@ sites_list <- c(site_primary)
 ees_pub_name <- "A level and other 16 to 18 results"
 # Update with parent publication link
 ees_publication <- "https://explore-education-statistics.service.gov.uk/find-statistics/a-level-and-other-16-to-18-results"
-google_analytics_key <- "Z967JJVQQX"
+google_analytics_key <- "72QXVY0V75"
 
 
 source("R/read_data.R")
@@ -118,7 +118,7 @@ source("R/read_data.R")
 
 data <- func_read_multiplesheets("data/2019A_l3va_step5_outputs_Rversion.xlsx")
 
-template_data <- read.csv("data/pupil_upload_template.csv")
+template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
 
 
 

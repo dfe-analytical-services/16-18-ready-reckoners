@@ -1,19 +1,19 @@
 {
   "input": {
     "a": 5,
-    "cookieAccept": 0,
-    "cookieLink": 0,
-    "cookieReject": 0,
     "cookies": {
 
     },
+    "cookies_banner-cookies_accept": 0,
+    "cookies_banner-cookies_link": 0,
+    "cookies_banner-cookies_reject": 0,
+    "cookies_panel-cookies_analytics": "no",
+    "cookies_panel-submit_btn": 0,
     "data_source": "National data only",
     "dropdown_cohort": "A level",
     "dropdown_qualifications": "Applied GCE AS level",
     "dropdown_sizes": "0.5",
     "dropdown_subjects": "Applied ICT",
-    "hideAccept": 0,
-    "hideReject": 0,
     "link_to_user_upload_tab": 0,
     "n": 5,
     "navlistPanel": "va_student_dashboard",

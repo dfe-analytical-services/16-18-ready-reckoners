@@ -38,6 +38,7 @@ shhh(library(snakecase))
 shhh(library(tidyr))
 shhh(library(shinycssloaders))
 # shhh(library(shinya11y))
+shhh(library(reactable))
 
 # Functions --------------------------------------------------------------------
 

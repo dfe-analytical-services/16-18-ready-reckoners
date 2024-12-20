@@ -1,4 +1,4 @@
-test_data <- read.csv("data/data.csv")
+test_data <- read.csv("data/.csv")
 
 test_data <- test_data %>%
   rename_with(., ~ to_snake_case(.x)) %>%
@@ -76,7 +76,7 @@ pupil_pava_bands_flags_pt1 <- pupil_pava_bands %>%
   mutate(lower_band = as.character(as.numeric(upper_band) - 1)) %>%
   ungroup()
 
-
+## I think this can throw up a warning if no students have prior attainment == x_21
 
 
 pupil_pava_bands_flags_pt2 <- pupil_pava_bands %>%
@@ -126,8 +126,8 @@ pupil_pava_bands %>% distinct(unique_identifier)
 
 
 
-expected_column_names <- c(
-  "unique_identifier", "forename", "surname", "gender", "forvus_id",
+common_column_names <- c(
+  "row_id", "forename", "surname", "sex",
   "cohort_code", "cohort_name",
   "qualification_code", "qualification_name",
   "subject_code", "subject_name", "size", "qual_id",
@@ -136,7 +136,7 @@ expected_column_names <- c(
 
 ## calculating estimate points
 pupil_va <- pupil_pava_bands_filtered %>%
-  group_by(unique_identifier) %>%
+  group_by(row_id) %>%
   mutate(numbering = row_number()) %>%
   mutate(band_position = case_when(
     numbering == 1 ~ "lower",
@@ -155,12 +155,16 @@ pupil_va <- pupil_pava_bands_filtered %>%
     estimated_points = (delta_y / delta_x) * (prior_attainment - x_lower) + y_lower,
     value_added = actual_points - estimated_points
   ) %>%
-  select(all_of(expected_column_names), estimated_points, value_added) %>%
+  select(all_of(common_column_names), estimated_points, value_added) %>%
   left_join(data$subject_variance %>% select(qual_id, subj_weighting, weighting), by = "qual_id") %>%
   mutate(
-    value_added_subj_weight = value_added * (subj_weighting / size),
-    value_added_qual_weight = value_added * (weighting / size)
+    value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
+    value_added_qual_weight = value_added * (weighting / as.numeric(size))
   )
+
+
+
+
 
 subject_va <- pupil_va %>%
   group_by(
@@ -186,6 +190,56 @@ subject_va %>%
   pull()
 
 pupil_pava_bands_filtered_wide %>% filter(band_position == "error")
+
+
+
+pupil_va_disadvantaged <- pupil_pava_bands_filtered %>%
+  filter(disadvantaged_status == 1) %>%
+  group_by(row_id) %>%
+  mutate(numbering = row_number()) %>%
+  mutate(band_position = case_when(
+    numbering == 1 ~ "lower",
+    numbering == 2 ~ "upper",
+    TRUE ~ "error"
+  )) %>%
+  select(-c(band, numbering)) %>%
+  pivot_wider(
+    names_from = band_position,
+    values_from = c(x, y, difference_prior_x)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    delta_x = x_upper - x_lower,
+    delta_y = y_upper - y_lower,
+    estimated_points = (delta_y / delta_x) * (prior_attainment - x_lower) + y_lower,
+    value_added = actual_points - estimated_points
+  ) %>%
+  select(all_of(common_column_names), estimated_points, value_added) %>%
+  left_join(data$disadvantaged_subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
+  mutate(
+    value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
+    value_added_qual_weight = value_added * (weighting / as.numeric(size))
+  )
+
+
+
+
+count_user_disadvantaged <- sum(pupil_pava_bands_filtered$disadvantaged_status)
+
+
+if (count_user_disadvantaged == 0) {
+  print("no_dis")
+}
+
+
+
+
+
+
+
+
+
+
 
 
 dog <- "The quick brown dog"
@@ -262,3 +316,9 @@ join_columns <- with_pava_lower[, !names(with_pava_lower) %in% c("band", "x", "y
 
 combined <- with_pava_lower %>%
   full_join(with_pava_upper, by = join_columns)
+
+
+
+file_path <- "data/pupil_upload_template.csv"
+file_info <- file.info(file_path)
+file_size <- file_info$size

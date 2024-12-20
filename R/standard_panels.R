@@ -44,12 +44,10 @@ a11y_panel <- function() {
           for all of our users. For example, these are known issues that we will
           continue to monitor and improve:"),
           tags$div(tags$ul(
-            tags$li("List"),
-            tags$li("known"),
-            tags$li("limitations, e.g."),
-            tags$li("Alternative text in interactive charts is limited to titles
-                    and could be more descriptive (although this data is
-                    available in csv format)")
+            tags$li("The navigation panel has been flagged as an accessibility issue and
+                    we will look for an alternative way to navigate around the panels on the app"),
+            tags$li("Focus styling is missing which means that features on the app do not
+                    change colour to indicate they have been selected.")
           )),
           h2("Feedback"),
           br(

@@ -117,7 +117,7 @@ source("R/read_data.R")
 # ---- read in the ready reckoner data from the Excel spreadsheet ----
 # -----------------------------------------------------------------------------------------------------------------------------
 
-data <- func_read_multiplesheets("data/2019A_l3va_step5_outputs_Rversion.xlsx")
+data <- func_read_multiplesheets("data/2024U_l3va_step5_outputs_Rversion_redacted.xlsx")
 
 template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
 

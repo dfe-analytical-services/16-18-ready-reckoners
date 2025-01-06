@@ -198,7 +198,16 @@ server <- function(input, output, session) {
   #   )
   # })
 
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- USER TEMPLATES - OUTPUT IN THE DATA UPLOAD TAB ----
+  # -----------------------------------------------------------------------------------------------------------------------------
 
+  output$model_data_download <- downloadHandler(
+    filename = "national_model_data.csv",
+    content = function(file) {
+      write.csv(data$national_bands, file, row.names = FALSE)
+    }
+  )
 
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- USER TEMPLATES - OUTPUT IN THE DATA UPLOAD TAB ----

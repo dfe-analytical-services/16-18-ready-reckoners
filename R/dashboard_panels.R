@@ -16,7 +16,7 @@ homepage_panel <- function() {
       gov_row(
         column(
           12,
-          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2019 revised data </h1>')),
+          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 provisional data </h1>')),
           br(),
           br()
         ),
@@ -46,12 +46,31 @@ homepage_panel <- function() {
                   p("To begin uploading your student data please navigate to the Data upload tab."),
                   p(actionLink("link_to_user_upload_tab", "User data upload panel")),
                   br(),
+                  p(
+                    "A level and other 16 to 18 results data are now all available on the statistics platform, ",
+                    a("Explore Education Statistics (EES)",
+                      href = "https://explore-education-statistics.service.gov.uk/find-statistics/a-level-and-other-16-to-18-results"
+                    )
+                  ),
+                  br(),
                   tags$div(HTML('<h3 class="govuk-heading-s"> Value added </h3>')),
                   p("16 to 18 value added measures show how well students did in their qualifications
                   compared to other students with similar prior attainment nationally."),
-                  p(" Information on how we calculated value added measures in the 16-18 technical guide")
-                ),
-                br()
+                  p(
+                    "Information on how we calculated value added measures can be found in the ",
+                    a("16-18 technical guide",
+                      href = "https://www.gov.uk/government/publications/16-to-19-accountability-headline-measures-technical-guide"
+                    )
+                  ),
+                  br(),
+                  p("The underlying national model data used by this app to calculate each student's value added result can also be downloaded as a .csv file"),
+                  downloadButton(
+                    outputId = "model_data_download",
+                    label = "Model data (csv, 500KB)",
+                    icon = NULL,
+                    class = "gov-uk-button-secondary"
+                  )
+                )
               )
             )
           ),
@@ -74,7 +93,14 @@ homepage_panel <- function() {
                 class = "panel-body",
                 tags$div(HTML('<h3 class="govuk-heading-s"> 1. Data upload </h3>')),
                 p("The data upload tab is the area for you to upload a .csv file holding your students data."),
-                p("There are a number of downloads available to assist with the data upload, also found in this panel under the 'Templates and lookups' tab."),
+                p(
+                  "Your student data can be taken directly from the pupil level file available on the ",
+                  a("checking website,",
+                    href = "https://check-your-performance-measures-data.education.gov.uk/hc/en-gb"
+                  ),
+                  "which can be saved as a csv file and uploaded within this app."
+                ),
+                p("Alternatively, there are a number of downloads available to assist with the data upload, also found in this panel under the 'Templates and lookups' tab."),
                 tags$ol(
                   tags$li("The template.csv file holds the required structure of the file necessary for the app to work.
                           This can be populated with your data, however the column names should remain unchanged.
@@ -195,7 +221,7 @@ data_upload_panel <- function() {
                 p("Download the template ready for populating with your student data:"),
                 downloadButton(
                   outputId = "student_data_template_download",
-                  label = "Student data template (csv, 20KB)",
+                  label = "Student data template (csv, 1KB)",
                   icon = NULL,
                   class = "gov-uk-button-secondary"
                 ),
@@ -208,7 +234,7 @@ data_upload_panel <- function() {
                 p("Download the lookup table showing valid code and name combinations for the exam cohort, qualification, subject and size:"),
                 downloadButton(
                   outputId = "user_lookup_download",
-                  label = "Lookup table (csv, 1KB)",
+                  label = "Lookup table (csv, 50KB)",
                   icon = NULL,
                   class = "gov-uk-button-secondary"
                 ),

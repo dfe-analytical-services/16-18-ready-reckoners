@@ -1,0 +1,24 @@
+{
+  "input": {
+    "a": 5,
+    "data_source": "National data only",
+    "dropdown_cohort": "A level",
+    "dropdown_qualifications": "GCE A level",
+    "dropdown_sizes": "1",
+    "dropdown_subjects": "Accounting/Finance",
+    "n": 5,
+    "navlistPanel": "data_upload_dashboard",
+    "tabsetpanels": "All Students",
+    "upload": null
+  },
+  "output": {
+    "input_preview": {
+      "message": "",
+      "call": "NULL",
+      "type": [
+        "shiny.silent.error",
+        "validation"
+      ]
+    }
+  }
+}

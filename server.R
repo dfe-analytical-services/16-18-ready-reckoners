@@ -175,20 +175,39 @@ server <- function(input, output, session) {
   })
 
 
-  output$input_preview <- renderDataTable({
-    datatable(
-      head(user_data(), input$a),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
-      )
+  output$input_preview <- renderReactable({
+    validate(need(input$a, message = "To preview data, please select number of rows needed."))
+
+    reactable(
+      head(user_data(), input$a)
     )
   })
 
+  # output$input_preview <- renderDataTable({
+  #   validate(need(input$a, message = "To preview data, please select number of rows needed."))
+  #
+  #   datatable(
+  #     head(user_data(), input$a),
+  #     options = list(
+  #       scrollX = TRUE,
+  #       scrollY = "250px",
+  #       info = FALSE,
+  #       pageLength = FALSE,
+  #       paging = FALSE
+  #     )
+  #   )
+  # })
 
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- USER TEMPLATES - OUTPUT IN THE DATA UPLOAD TAB ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  output$model_data_download <- downloadHandler(
+    filename = "national_model_data.csv",
+    content = function(file) {
+      write.csv(data$national_bands, file, row.names = FALSE)
+    }
+  )
 
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- USER TEMPLATES - OUTPUT IN THE DATA UPLOAD TAB ----
@@ -216,7 +235,8 @@ server <- function(input, output, session) {
   ## for use in the data checking tab (displayed at top)
   missing_upload_message1 <- reactive({
     if (is.null(input$upload)) {
-      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+      # text <- paste(icon("triangle-exclamation"), "<font color=\"#C65102\"><b>", "Please upload your student data", "</b></font>")
+      text <- paste("<font color=\"#C65102\"><b>", "Please upload your student data.", "</b></font>")
     }
   })
 
@@ -230,7 +250,7 @@ server <- function(input, output, session) {
   ## for use in the student value added table tab (displayed at top)
   missing_upload_message2 <- reactive({
     if (is.null(input$upload)) {
-      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+      text <- paste("<font color=\"#C65102\"><b>", "Please upload your student data.", "</b></font>")
     } else {
       text <- paste("Download your institution data with individual value added scores calculated for each student:")
     }
@@ -244,7 +264,7 @@ server <- function(input, output, session) {
   ## for use in the subject chart tab (to replace table when national and student data radio button is selected)
   missing_upload_message3 <- reactive({
     if (is.null(input$upload) & input$data_source == "National and student data") {
-      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+      text <- paste("<font color=\"#C65102\"><b>", "Please upload your student data.", "</b></font>")
     }
   })
 
@@ -256,7 +276,7 @@ server <- function(input, output, session) {
   ## for use in the cohort value added tab (displayed at top)
   missing_upload_message4 <- reactive({
     if (is.null(input$upload)) {
-      text <- paste(icon("triangle-exclamation"), "<font color=\"#F46A25\"><b>", "Please upload your student data", "</b></font>")
+      text <- paste("<font color=\"#C65102\"><b>", "Please upload your student data.", "</b></font>")
     } else {
       text <- paste("Download your institution data with headline value added scores calculated:")
     }
@@ -351,18 +371,24 @@ server <- function(input, output, session) {
       )
   })
 
-  output$removed_table <- renderDataTable({
-    datatable(
-      removed_check_summary(),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
-      )
+  output$removed_table <- renderReactable({
+    reactable(
+      removed_check_summary()
     )
   })
+
+  # output$removed_table <- renderDataTable({
+  #   datatable(
+  #     removed_check_summary(),
+  #     options = list(
+  #       scrollX = TRUE,
+  #       scrollY = "250px",
+  #       info = FALSE,
+  #       pageLength = FALSE,
+  #       paging = FALSE
+  #     )
+  #   )
+  # })
 
   output$removed_download <- downloadHandler(
     filename = "removed_check.csv",
@@ -415,16 +441,9 @@ server <- function(input, output, session) {
       rename("Number of rows updated" = n)
   })
 
-  output$cohort_check_table <- renderDataTable({
-    datatable(
-      cohort_check_summary(),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
-      )
+  output$cohort_check_table <- renderReactable({
+    reactable(
+      cohort_check_summary()
     )
   })
 
@@ -480,16 +499,9 @@ server <- function(input, output, session) {
       rename("Number of rows updated" = n)
   })
 
-  output$qualification_check_table <- renderDataTable({
-    datatable(
-      qualification_check_summary(),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
-      )
+  output$qualification_check_table <- renderReactable({
+    reactable(
+      qualification_check_summary()
     )
   })
 
@@ -545,16 +557,9 @@ server <- function(input, output, session) {
       rename("Number of rows updated" = n)
   })
 
-  output$subject_check_table <- renderDataTable({
-    datatable(
-      subject_check_summary(),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
-      )
+  output$subject_check_table <- renderReactable({
+    reactable(
+      subject_check_summary()
     )
   })
 
@@ -608,16 +613,9 @@ server <- function(input, output, session) {
       rename("Number of rows updated" = n)
   })
 
-  output$qualid_check_table <- renderDataTable({
-    datatable(
-      qualid_check_summary(),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
-      )
+  output$qualid_check_table <- renderReactable({
+    reactable(
+      qualid_check_summary()
     )
   })
 
@@ -686,16 +684,9 @@ server <- function(input, output, session) {
       )
   })
 
-  output$prioratt_check_table <- renderDataTable({
-    datatable(
-      prioratt_check_summary(),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
-      )
+  output$prioratt_check_table <- renderReactable({
+    reactable(
+      prioratt_check_summary()
     )
   })
 
@@ -907,8 +898,8 @@ server <- function(input, output, session) {
 
   ## pupil VA preview
 
-  output$student_va_scores <- renderDataTable({
-    datatable(
+  output$student_va_scores <- renderReactable({
+    reactable(
       head(
         pupil_va() %>%
           select(
@@ -921,16 +912,35 @@ server <- function(input, output, session) {
             value_added = round2(value_added, 2)
           ),
         input$n
-      ),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE
       )
     )
   })
+
+
+  # output$student_va_scores <- renderDataTable({
+  #   datatable(
+  #     head(
+  #       pupil_va() %>%
+  #         select(
+  #           forename, surname, cohort_name, qualification_name, subject_name, size, qual_id,
+  #           prior_attainment, actual_points, estimated_points, value_added
+  #         ) %>%
+  #         mutate(
+  #           prior_attainment = round2(prior_attainment, 2),
+  #           estimated_points = round2(estimated_points, 2),
+  #           value_added = round2(value_added, 2)
+  #         ),
+  #       input$n
+  #     ),
+  #     options = list(
+  #       scrollX = TRUE,
+  #       scrollY = "250px",
+  #       info = FALSE,
+  #       pageLength = FALSE,
+  #       paging = FALSE
+  #     )
+  #   )
+  # })
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1053,6 +1063,14 @@ server <- function(input, output, session) {
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- DISADVANTAGED HEADLINE VA DERIVATIONS - BY COHORT ----
   # -----------------------------------------------------------------------------------------------------------------------------
+
+
+  count_user_disadvantaged <- reactive({
+    req(pupil_pava_bands_filtered())
+
+    sum(pupil_pava_bands_filtered()$disadvantaged_status)
+  })
+
 
 
   pupil_va_disadvantaged <- reactive({
@@ -1398,18 +1416,32 @@ server <- function(input, output, session) {
     # print(max_x())
 
     ggplot(subject_chart_data(), aes(x = x, y = y, color = source, shape = source)) +
+      labs(
+        title = "KS4 prior attainment (points) compared with 16-18 attainment outcomes (points).",
+        alt = "By defualt this line chart is displaying the national average value added line
+           for the qualification and subject chosen using the drop down boxes.
+           If the user selects to include National and student data the chart will update to
+           add the users student data as scatter points over the original national average line"
+      ) +
       geom_line(data = filter(subject_chart_data(), source == "national")) +
       geom_point(data = filter(subject_chart_data(), source == "user"), size = 4) +
       theme(
-        panel.grid.major = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(
+          color = "azure3",
+          linewidth = 0.5,
+          linetype = 2
+        ),
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
+        panel.background = element_blank(),
         axis.line = element_line(color = "black"),
         axis.title = element_text(size = 20),
-        axis.text = element_text(size = 16)
+        axis.text = element_text(size = 16),
+        plot.title = element_text(hjust = 0, color = "black", size = 20, face = "bold")
       ) +
       xlab("Prior Attainment (points)") +
-      ylab("Outcome Attainment (points)") +
+      ylab(" ") +
       # scale_x_continuous(breaks = seq(0, max_x, by = 2)) +
       scale_colour_manual(values = c("black", "red")) +
       scale_shape_manual(values = c(NA, 4))
@@ -1575,24 +1607,34 @@ server <- function(input, output, session) {
       select(grade, points)
   })
 
-  output$grade_point_table <- renderDataTable({
-    datatable(
+  output$grade_point_table <- renderReactable({
+    reactable(
       grade_point_relation()[-1] %>%
         rename("Outcome attainment points" = points) %>%
         t() %>%
         as.data.frame() %>%
-        setNames(grade_point_relation()[, 1]),
-      options = list(
-        scrollX = TRUE,
-        scrollY = "250px",
-        info = FALSE,
-        pageLength = FALSE,
-        paging = FALSE,
-        searching = FALSE
-      )
+        setNames(grade_point_relation()[, 1])
     )
   })
 
+
+  # output$grade_point_table <- renderDataTable({
+  #   datatable(
+  #     grade_point_relation()[-1] %>%
+  #       rename("Outcome attainment points" = points) %>%
+  #       t() %>%
+  #       as.data.frame() %>%
+  #       setNames(grade_point_relation()[, 1]),
+  #     options = list(
+  #       scrollX = TRUE,
+  #       scrollY = "250px",
+  #       info = FALSE,
+  #       pageLength = FALSE,
+  #       paging = FALSE,
+  #       searching = FALSE
+  #     )
+  #   )
+  # })
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -2251,6 +2293,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
     } else if (length(cohort_alev_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2288,6 +2336,12 @@ server <- function(input, output, session) {
         paste0("-"),
         paste0("Please upload student data"),
         color = "purple"
+      )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
       )
     } else if (length(cohort_acad_entries_dis0() != 0)) {
       valueBox(
@@ -2327,6 +2381,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
     } else if (length(cohort_agen_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2365,6 +2425,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
     } else if (length(cohort_techlev_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2402,6 +2468,12 @@ server <- function(input, output, session) {
         paste0("-"),
         paste0("Please upload student data"),
         color = "purple"
+      )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
       )
     } else if (length(cohort_techcert_entries_dis0() != 0)) {
       valueBox(
@@ -2444,6 +2516,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
     } else if (length(cohort_alev_entries_dis0() != 0)) {
       # Put value into box to plug into app
       valueBox(
@@ -2485,6 +2563,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
     } else if (length(cohort_acad_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2524,6 +2608,12 @@ server <- function(input, output, session) {
         paste0("-"),
         paste0("Please upload student data"),
         color = "purple"
+      )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
       )
     } else if (length(cohort_agen_entries_dis0() != 0)) {
       valueBox(
@@ -2565,6 +2655,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
     } else if (length(cohort_techlev_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2604,6 +2700,12 @@ server <- function(input, output, session) {
         paste0("-"),
         paste0("Please upload student data"),
         color = "purple"
+      )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
       )
     } else if (length(cohort_techcert_entries_dis0() != 0)) {
       valueBox(
@@ -2656,6 +2758,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
     } else if (length(cohort_alev_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2703,6 +2811,12 @@ server <- function(input, output, session) {
         paste0("-"),
         paste0("Please upload student data"),
         color = "purple"
+      )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
       )
     } else if (length(cohort_acad_entries_dis0() != 0)) {
       valueBox(
@@ -2752,6 +2866,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
+      )
     } else if (length(cohort_agen_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2800,6 +2920,12 @@ server <- function(input, output, session) {
         paste0("Please upload student data"),
         color = "purple"
       )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "blue"
+      )
     } else if (length(cohort_techlev_entries_dis0() != 0)) {
       valueBox(
         # take input number
@@ -2847,6 +2973,12 @@ server <- function(input, output, session) {
         paste0("-"),
         paste0("Please upload student data"),
         color = "purple"
+      )
+    } else if (count_user_disadvantaged() == 0) {
+      valueBox(
+        paste0("-"),
+        paste0("No entries"),
+        color = "dark-blue"
       )
     } else if (length(cohort_techcert_entries_dis0() != 0)) {
       valueBox(

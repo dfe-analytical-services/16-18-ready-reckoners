@@ -96,7 +96,7 @@ homepage_panel <- function() {
                 p(
                   "Your student data can be taken directly from the pupil level file available on the ",
                   a("checking website,",
-                    href = "https://check-your-performance-measures-data.education.gov.uk/hc/en-gb"
+                    href = "https://onlinecollections.des.fasst.org.uk/fastform/school-checking-exercise-16to18"
                   ),
                   "which can be saved as a csv file and uploaded within this app."
                 ),

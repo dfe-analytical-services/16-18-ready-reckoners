@@ -128,7 +128,15 @@ ui <- function(input, output, session) {
           date_tested = "17/12/2024",
           date_prepared = "17/12/2024",
           date_reviewed = "17/12/2024",
-          issues_contact = "attainment.statistics@education.gov.uk"
+          issues_contact = "attainment.statistics@education.gov.uk",
+          non_accessible_components = c(
+            "Some navigation elements are not announced correctly by screen readers",
+            "Focus highlighting is limited within the dashboard"
+          ),
+          specific_issues = c(
+            "The navigation panel has been flagged as an accessibility issue and we will look for an alternative way to navigate around the panels on the app",
+            "Focus styling is missing which means that features on the app do not change colour to indicate they have been selected."
+          )
         )
       ),
       shiny::tabPanel(

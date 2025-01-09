@@ -131,11 +131,13 @@ ui <- function(input, output, session) {
           issues_contact = "attainment.statistics@education.gov.uk",
           non_accessible_components = c(
             "Some navigation elements are not announced correctly by screen readers",
-            "Focus highlighting is limited within the dashboard"
+            "Focus highlighting is limited within the dashboard",
+            "Heading image and link are not labelled approprately"
           ),
           specific_issues = c(
             "The navigation panel has been flagged as an accessibility issue and we will look for an alternative way to navigate around the panels on the app",
-            "Focus styling is missing which means that features on the app do not change colour to indicate they have been selected."
+            "Focus styling is missing which means that features on the app do not change colour to indicate they have been selected.",
+            "Heading image and link are not labelled approprately"
           )
         )
       ),

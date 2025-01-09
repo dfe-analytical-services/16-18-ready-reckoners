@@ -183,7 +183,7 @@ data_upload_panel <- function() {
       column(
         width = 12,
         tabsetPanel(
-          id = "tabsetpanels",
+          id = "dataupload_tabsetpanels",
           tabPanel(
             "Student data",
             fluidRow(
@@ -611,7 +611,7 @@ cohort_va_panel <- function() {
       ),
       br(),
       tabsetPanel(
-        id = "tabsetpanels",
+        id = "va_tabsetpanels",
         tabPanel(
           "All Students",
           fluidRow(

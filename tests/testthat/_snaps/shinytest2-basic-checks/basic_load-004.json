@@ -10,6 +10,7 @@
     "cookies_panel-cookies_analytics": "no",
     "cookies_panel-submit_btn": 0,
     "data_source": "National data only",
+    "dataupload_tabsetpanels": "Student data",
     "dropdown_cohort": "A level",
     "dropdown_qualifications": "GCE A level",
     "dropdown_sizes": "1",
@@ -17,8 +18,8 @@
     "link_to_user_upload_tab": 0,
     "n": 5,
     "navlistPanel": "va_student_dashboard",
-    "tabsetpanels": "All Students",
-    "upload": null
+    "upload": null,
+    "va_tabsetpanels": "All Students"
   },
   "output": {
     "cohort_check_table": {

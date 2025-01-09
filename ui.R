@@ -82,19 +82,8 @@ ui <- function(input, output, session) {
         referrer = "no-referrer"
       ),
     shinyjs::useShinyjs(),
-    customDisconnectMessage(),
     useShinydashboard(),
-    # Setting up cookie consent based on a cookie recording the consent:
-    # https://book.javascript-for-r.com/shiny-cookies.html
-    tags$head(
-      tags$script(
-        src = paste0(
-          "https://cdn.jsdelivr.net/npm/js-cookie@rc/",
-          "dist/js.cookie.min.js"
-        )
-      ),
-      tags$script(src = "cookie-consent.js")
-    ),
+    dfeshiny::custom_disconnect_message(dashboard_title = site_title),
     tags$head(includeHTML(("google-analytics.html"))),
     tags$head(
       tags$link(
@@ -103,14 +92,12 @@ ui <- function(input, output, session) {
         href = "dfe_shiny_gov_style.css"
       )
     ),
-    shinyGovstyle::cookieBanner("16-18 Ready Reckoner"),
-    shinyGovstyle::header(
-      main_text = "",
-      main_link = "https://www.gov.uk/government/organisations/department-for-education",
-      secondary_text = "16-18 Ready Reckoner",
-      logo = "images/DfE_logo_landscape.png",
-      logo_width = 150,
-      logo_height = 32
+    dfeshiny::dfe_cookies_script(),
+    dfeshiny::cookies_banner_ui(
+      name = site_title
+    ),
+    dfeshiny::header(
+      header = site_title
     ),
     shinyGovstyle::banner(
       "beta banner",
@@ -132,7 +119,26 @@ ui <- function(input, output, session) {
       student_va_panel(),
       subject_va_panel(),
       cohort_va_panel(),
-      a11y_panel(),
+      shiny::tabPanel(
+        value = "accessibility",
+        "Accessibility",
+        dfeshiny::a11y_panel(
+          dashboard_title = site_title,
+          dashboard_url = site_primary,
+          date_tested = "17/12/2024",
+          date_prepared = "17/12/2024",
+          date_reviewed = "17/12/2024",
+          issues_contact = "attainment.statistics@education.gov.uk",
+          non_accessible_components = c(
+            "Some navigation elements are not announced correctly by screen readers",
+            "Focus highlighting is limited within the dashboard"
+          ),
+          specific_issues = c(
+            "The navigation panel has been flagged as an accessibility issue and we will look for an alternative way to navigate around the panels on the app",
+            "Focus styling is missing which means that features on the app do not change colour to indicate they have been selected."
+          )
+        )
+      ),
       shiny::tabPanel(
         value = "support_panel",
         "Support and feedback",
@@ -143,6 +149,11 @@ ui <- function(input, output, session) {
           publication_slug = "a-level-and-other-16-to-18-results"
           # form_url = "https://forms.office.com"
         )
+      ),
+      shiny::tabPanel(
+        value = "cookies_panel_ui",
+        "Cookies",
+        dfeshiny::cookies_panel_ui(google_analytics_key = google_analytics_key)
       )
     ),
     tags$script(

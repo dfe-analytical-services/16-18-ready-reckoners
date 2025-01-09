@@ -1,0 +1,18 @@
+{
+  "input": {
+    "a": 5,
+    "data_source": "National data only",
+    "dataupload_tabsetpanels": "Student data",
+    "dropdown_cohort": "A level",
+    "dropdown_qualifications": "GCE A level",
+    "dropdown_sizes": "1",
+    "dropdown_subjects": "Accounting/Finance",
+    "n": 5,
+    "navlistPanel": "User guide and information",
+    "upload": null,
+    "va_tabsetpanels": "All Students"
+  },
+  "output": {
+
+  }
+}

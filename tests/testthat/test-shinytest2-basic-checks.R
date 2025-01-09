@@ -10,7 +10,7 @@ app$wait_for_idle(500)
 # They will not cause any failures if there's changes
 
 inputs <- c(
-  "navlistPanel", "tabsetpanels",
+  "navlistPanel", "dataupload_tabsetpanels", "va_tabsetpanels",
   "data_source", "dropdown_cohort", "dropdown_qualifications", "dropdown_sizes",
   "dropdown_subjects",
   "a", "n",

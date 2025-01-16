@@ -219,7 +219,7 @@ server <- function(input, output, session) {
   output$disadvantaged_subject_variance_download <- downloadHandler(
     filename = "disadvantaged_subject_variance_data.csv",
     content = function(file) {
-      write.csv(data$disadvantaged_subject_variance, file, row.names = FALSE)
+      write.csv(data$disadvantaged_subject_variance %>% select(-mapping), file, row.names = FALSE)
     }
   )
 

@@ -63,10 +63,23 @@ homepage_panel <- function() {
                     )
                   ),
                   br(),
-                  p("The underlying national model data used by this app to calculate each student's value added result can also be downloaded as a .csv file"),
+                  p("The underlying data used by this app to calculate each student's value added result and the confidence intervals can be downloaded here as .csv files.
+                  These files include the national model data, the subject variance data, and the subject variance data for the disadvantaged cohort."),
                   downloadButton(
                     outputId = "model_data_download",
                     label = "Model data (csv, 500KB)",
+                    icon = NULL,
+                    class = "gov-uk-button-secondary"
+                  ),
+                  downloadButton(
+                    outputId = "subject_variance_download",
+                    label = "Subject variance (csv, 50KB)",
+                    icon = NULL,
+                    class = "gov-uk-button-secondary"
+                  ),
+                  downloadButton(
+                    outputId = "disadvantaged_subject_variance_download",
+                    label = "Disadvantaged subject variance (csv, 50KB)",
                     icon = NULL,
                     class = "gov-uk-button-secondary"
                   )

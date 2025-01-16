@@ -199,13 +199,27 @@ server <- function(input, output, session) {
   # })
 
   # -----------------------------------------------------------------------------------------------------------------------------
-  # ---- USER TEMPLATES - OUTPUT IN THE DATA UPLOAD TAB ----
+  # ---- UNDERLYING DATA DOWNLOADS - OUTPUT IN THE DATA UPLOAD TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
   output$model_data_download <- downloadHandler(
     filename = "national_model_data.csv",
     content = function(file) {
       write.csv(data$national_bands, file, row.names = FALSE)
+    }
+  )
+
+  output$subject_variance_download <- downloadHandler(
+    filename = "subject_variance_data.csv",
+    content = function(file) {
+      write.csv(data$subject_variance, file, row.names = FALSE)
+    }
+  )
+
+  output$disadvantaged_subject_variance_download <- downloadHandler(
+    filename = "disadvantaged_subject_variance_data.csv",
+    content = function(file) {
+      write.csv(data$disadvantaged_subject_variance, file, row.names = FALSE)
     }
   )
 

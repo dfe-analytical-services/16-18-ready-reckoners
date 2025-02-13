@@ -16,7 +16,7 @@ homepage_panel <- function() {
       gov_row(
         column(
           12,
-          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 provisional data </h1>')),
+          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 revised data </h1>')),
           br(),
           br()
         ),
@@ -130,10 +130,9 @@ homepage_panel <- function() {
                 tags$ol(
                   tags$li("The combination of exam cohort code, qualification code, subject code, and size entered for each student exists.
                   Any combinations that are not recognised will be removed from the data and the app will proceed without including them in the value added calculations."),
-                  tags$li("The cohort name exists.
-                          If an unexpected cohort name is found in the data, the app will first look to correct the cohort name.
-                          If the app is unable to correct the name, the row will be removed from the data
-                          and the app will proceed without including these rows in the value added calculations."),
+                  # tags$li("The cohort name exists.
+                  #         If an unexpected cohort name is found in the data, the row will be removed from the data
+                  #         and the app will proceed without including these rows in the value added calculations."),
                   tags$li("The combination of qualification code and qualification name is correct.
                           If the cohort code and name do not match as expected the app will first look to correct the
                           qualfication name, based on the qualification code provided by the user.
@@ -316,36 +315,36 @@ data_checking_panel <- function() {
       ),
       br(),
       br(),
+      # gov_row(
+      #   column(
+      #     width = 6,
+      #     tags$div(HTML('<h2 class="govuk-heading-m"> 2. Exam cohort name check: </h2>')),
+      #     p("This check confirms the exam cohort name is recognised as expected."),
+      #     p("The table below will reveal any discrepancies which will be removed from the data, and the additional download will provide more details."),
+      #     reactableOutput("cohort_check_table")
+      #   ),
+      #   column(
+      #     width = 6,
+      #     infoBoxOutput("cohort_infobox")
+      #   ),
+      #   column(
+      #     width = 12,
+      #     br(),
+      #     p("Download the full comparison for the exam cohort check:"),
+      #     downloadButton(
+      #       outputId = "cohort_check_download",
+      #       label = "Exam cohort check",
+      #       icon = NULL,
+      #       class = "gov-uk-button-secondary"
+      #     )
+      #   )
+      # ),
+      # br(),
+      # br(),
       gov_row(
         column(
           width = 6,
-          tags$div(HTML('<h2 class="govuk-heading-m"> 2. Exam cohort code/name check: </h2>')),
-          p("This check confirms the exam cohort code and exam cohort name match as expected."),
-          p("The table below will reveal any discrepancies and the additional download will provide more details."),
-          reactableOutput("cohort_check_table")
-        ),
-        column(
-          width = 6,
-          infoBoxOutput("cohort_infobox")
-        ),
-        column(
-          width = 12,
-          br(),
-          p("Download the full comparison for the exam cohort check:"),
-          downloadButton(
-            outputId = "cohort_check_download",
-            label = "Exam cohort check",
-            icon = NULL,
-            class = "gov-uk-button-secondary"
-          )
-        )
-      ),
-      br(),
-      br(),
-      gov_row(
-        column(
-          width = 6,
-          tags$div(HTML('<h2 class="govuk-heading-m"> 3. Qualification code/name check: </h2>')),
+          tags$div(HTML('<h2 class="govuk-heading-m"> 2. Qualification code/name check: </h2>')),
           p("This check confirms the qualification code and qualification name match as expected."),
           p("The table below will reveal any discrepancies and the additional download will provide more details."),
           reactableOutput("qualification_check_table")
@@ -371,7 +370,7 @@ data_checking_panel <- function() {
       gov_row(
         column(
           width = 6,
-          tags$div(HTML('<h2 class="govuk-heading-m"> 4. Subject code/name check: </h2>')),
+          tags$div(HTML('<h2 class="govuk-heading-m"> 3. Subject code/name check: </h2>')),
           p("This check confirms the subject code and subject name match as expected."),
           p("The table below will reveal any discrepancies and the additional download will provide more details."),
           reactableOutput("subject_check_table")
@@ -397,7 +396,7 @@ data_checking_panel <- function() {
       gov_row(
         column(
           width = 6,
-          tags$div(HTML('<h2 class="govuk-heading-m"> 5. Qualification ID check: </h2>')),
+          tags$div(HTML('<h2 class="govuk-heading-m"> 4. Qualification ID check: </h2>')),
           p("This check confirms the qualification ID (qual_id) has been derived correctly from the exam cohort, qualification, subject and size codes uploaded by the user."),
           p("The table below will reveal any discrepancies and the additional download will provide more details."),
           reactableOutput("qualid_check_table")
@@ -423,7 +422,7 @@ data_checking_panel <- function() {
       gov_row(
         column(
           width = 6,
-          tags$div(HTML('<h2 class="govuk-heading-m"> 6. Pupil prior attainment check: </h2>')),
+          tags$div(HTML('<h2 class="govuk-heading-m"> 5. Pupil prior attainment check: </h2>')),
           p("This check confirms the pupil prior attainment entered by the user is within the range of prior attainments used in the value added model for that subject."),
           p("The table below will reveal any pupils in the user data which have a prior attainment higher, or lower, than its respective value added model.
             These pupils will be removed from the data.

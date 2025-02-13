@@ -160,16 +160,18 @@ server <- function(input, output, session) {
         size = as.character(size),
         disadvantaged_status = as.integer(disadvantaged_status),
         row_id = row_number(),
+        # cohort_name = tolower(cohort_name),
         cohort_code = case_when(
-          cohort_name == "A level" ~ "1",
-          cohort_name == "Academic" ~ "2",
-          cohort_name == "Applied general" ~ "3",
+          tolower(cohort_name) == "a level" ~ "1",
+          tolower(cohort_name) == "academic" ~ "2",
+          tolower(cohort_name) == "applied general" ~ "3",
           qualification_code == "699" ~ "4",
-          cohort_name == "Tech level" ~ "5",
-          cohort_name == "Technical certificate" ~ "6",
+          tolower(cohort_name) == "tech level" ~ "5",
+          tolower(cohort_name) == "technical certificate" ~ "6",
           TRUE ~ "unknown"
         )
       )
+
 
     return(student_data)
   })
@@ -366,18 +368,21 @@ server <- function(input, output, session) {
     req(user_data_with_lookup())
 
     user_data_with_lookup() %>%
+      left_join(user_data_academic() %>% select(row_id, cohort_name),
+        by = "row_id"
+      ) %>%
       filter(qual_id == "Removed") %>%
-      select(row_id, cohort_code, qualification_code, subject_code, size)
+      select(row_id, cohort_name.y, cohort_code, qualification_code, subject_code, size)
   })
 
   removed_check_summary <- reactive({
     req(removed_check())
 
     removed_summary <- removed_check() %>%
-      select(-row_id) %>%
+      select(-row_id, -cohort_code) %>%
       count(pick(everything())) %>%
       rename(
-        "User cohort code" = cohort_code,
+        "User cohort name" = cohort_name.y,
         "User qualification code" = qualification_code,
         "User subject code" = subject_code,
         "User size" = size,
@@ -425,60 +430,50 @@ server <- function(input, output, session) {
 
 
   ## 2. EXAM COHORT CHECKS
-  ## Does cohort name and cohort code match as expected?
+  ## Are there any cohort names the app does not recognise?
 
-  cohort_check_differences <- reactive({
-    req(user_data_with_lookup())
-
-    cohort_differences <- setdiff(
-      user_data_academic() %>% select(row_id, cohort_name, cohort_code),
-      user_data_with_lookup() %>% select(row_id, cohort_name, cohort_code)
-    ) %>%
-      left_join(user_data_with_lookup() %>% select(row_id, cohort_name, cohort_code),
-        by = "row_id"
-      ) %>%
-      filter(cohort_name.y != "Removed") %>%
-      rename(
-        "User cohort name" = cohort_name.x,
-        "User cohort code" = cohort_code.x,
-        "Updated cohort name" = cohort_name.y,
-        "Updated cohort code" = cohort_code.y
-      )
-  })
-
-  cohort_check_summary <- reactive({
-    req(cohort_check_differences())
-
-    cohort_differences_summary <- cohort_check_differences() %>%
-      select(-row_id) %>%
-      count(pick(everything())) %>%
-      rename("Number of rows updated" = n)
-  })
-
-  output$cohort_check_table <- renderReactable({
-    reactable(
-      cohort_check_summary()
-    )
-  })
-
-  output$cohort_check_download <- downloadHandler(
-    filename = "exam_cohort_check.csv",
-    content = function(file) {
-      write.csv(cohort_check_differences(), file, row.names = FALSE)
-    }
-  )
-
-  output$cohort_infobox <- renderInfoBox({
-    colour <- "olive"
-    infobox_text <- "No changes made to student data"
-    icon_symbol <- "check"
-    if (cohort_check_summary() %>% count() >= 1) {
-      colour <- "maroon"
-      infobox_text <- "Changes made to student data"
-      icon_symbol <- "exclamation"
-    }
-    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
-  })
+  # cohort_check_differences <- reactive({
+  #   req(user_data_with_lookup())
+  #
+  #   cohort_differences <- user_data_academic() %>%
+  #     filter(cohort_code == "unknown") %>%
+  #     select(row_id, cohort_name) %>%
+  #     rename("User cohort name" = cohort_name)
+  # })
+  #
+  # cohort_check_summary <- reactive({
+  #   req(cohort_check_differences())
+  #
+  #   cohort_differences_summary <- cohort_check_differences() %>%
+  #     select(-row_id) %>%
+  #     count(pick(everything())) %>%
+  #     rename("Number of rows updated" = n)
+  # })
+  #
+  # output$cohort_check_table <- renderReactable({
+  #   reactable(
+  #     cohort_check_summary()
+  #   )
+  # })
+  #
+  # output$cohort_check_download <- downloadHandler(
+  #   filename = "exam_cohort_check.csv",
+  #   content = function(file) {
+  #     write.csv(cohort_check_differences(), file, row.names = FALSE)
+  #   }
+  # )
+  #
+  # output$cohort_infobox <- renderInfoBox({
+  #   colour <- "olive"
+  #   infobox_text <- "No changes made to student data"
+  #   icon_symbol <- "check"
+  #   if (cohort_check_summary() %>% count() >= 1) {
+  #     colour <- "maroon"
+  #     infobox_text <- "Data has been removed"
+  #     icon_symbol <- "exclamation"
+  #   }
+  #   infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  # })
 
 
 

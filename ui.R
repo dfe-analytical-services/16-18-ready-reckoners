@@ -103,9 +103,7 @@ ui <- function(input, output, session) {
       "beta banner",
       "beta",
       paste0(
-        "This Dashboard is in beta phase and we are still reviewing performance and reliability. ",
-        "The 16 to 18 ready reckoner does not include vocational and technical qualifications for 2024 provisional data
-      due to a data collection issue. This will be resolved in the revised publication."
+        "This Dashboard is in beta phase and we are still reviewing performance and reliability."
       )
     ),
     shiny::navlistPanel(
@@ -132,12 +130,12 @@ ui <- function(input, output, session) {
           non_accessible_components = c(
             "Some navigation elements are not announced correctly by screen readers",
             "Focus highlighting is limited within the dashboard",
-            "Heading image and link are not labelled approprately"
+            "Heading image and link are not labelled appropriately "
           ),
           specific_issues = c(
             "The navigation panel has been flagged as an accessibility issue and we will look for an alternative way to navigate around the panels on the app",
             "Focus styling is missing which means that features on the app do not change colour to indicate they have been selected.",
-            "Heading image and link are not labelled approprately"
+            "Heading image and link are not labelled appropriately"
           )
         )
       ),
@@ -148,8 +146,8 @@ ui <- function(input, output, session) {
           team_email = "attainment.statistics@education.gov.uk",
           repo_name = "https://github.com/dfe-analytical-services/16-18-ready-reckoners",
           publication_name = "A level and other 16 to 18 results",
-          publication_slug = "a-level-and-other-16-to-18-results"
-          # form_url = "https://forms.office.com"
+          publication_slug = "a-level-and-other-16-to-18-results",
+          form_url = "https://forms.office.com/e/Sa4ULADzx4"
         )
       ),
       shiny::tabPanel(

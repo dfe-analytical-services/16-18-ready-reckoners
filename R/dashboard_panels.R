@@ -245,12 +245,26 @@ data_upload_panel <- function() {
                 width = 12,
                 p("Download the lookup table showing valid code and name combinations for the exam cohort, qualification, subject and size:"),
                 downloadButton(
-                  outputId = "user_lookup_download",
-                  label = "Lookup table (csv, 50KB)",
+                  outputId = "qualid_lookup_download",
+                  label = "L3VA subject lookup table (csv, 50KB)",
                   icon = NULL,
                   class = "gov-uk-button-secondary"
                 ),
                 br(),
+                br()
+              ),
+              br(),
+              column(
+                width = 12,
+                p("Download the lookup table showing how qualification number
+                (as used in the Ofqual Register, and formerly known as QAN) relates to
+                  each qualification id (qual_id), exam cohort, qualification, subject and size:"),
+                downloadButton(
+                  outputId = "qan_lookup_download",
+                  label = "Qualification number lookup table (csv, 100KB)",
+                  icon = NULL,
+                  class = "gov-uk-button-secondary"
+                ),
                 br(),
                 br()
               )

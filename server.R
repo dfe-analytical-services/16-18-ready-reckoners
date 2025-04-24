@@ -250,6 +250,12 @@ server <- function(input, output, session) {
     }
   )
 
+  output$points_lookup_download <- downloadHandler(
+    filename = "points_lookup.csv",
+    content = function(file) {
+      write.csv(data$points_lookup, file, row.names = FALSE)
+    }
+  )
 
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- USER "DATA MISSING" MESSAGES ----

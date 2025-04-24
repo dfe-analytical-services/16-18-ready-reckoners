@@ -4,6 +4,7 @@
 .RData*
 .Ruserdata
 *unpublished*
+README.html
 2019_rr/*
 data/2019_testing_template.csv
 data/2024_testing_template.csv

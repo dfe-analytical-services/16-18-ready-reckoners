@@ -16,7 +16,7 @@ homepage_panel <- function() {
       gov_row(
         column(
           12,
-          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 revised data </h1>')),
+          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 final data </h1>')),
           br(),
           br()
         ),

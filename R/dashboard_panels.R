@@ -17,7 +17,6 @@ homepage_panel <- function() {
         column(
           12,
           tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 final data </h1>')),
-          br(),
           br()
         ),
 
@@ -30,9 +29,8 @@ homepage_panel <- function() {
               class = "panel panel-info",
               div(
                 class = "panel-heading",
-                style = "color: white;font-size: 18px;font-style: bold;
-                background-color: #1d70b8;",
-                tags$div(HTML('<h2 class="govuk-heading-m"> Information </h2>'))
+                style = "color: white; background-color: #1d70b8;",
+                tags$h2("Information")
               ),
               div(
                 class = "panel-body",
@@ -98,9 +96,8 @@ homepage_panel <- function() {
               class = "panel panel-info",
               div(
                 class = "panel-heading",
-                style = "color: white;font-size: 18px;font-style: bold;
-                background-color: #1d70b8;",
-                tags$div(HTML('<h2 class="govuk-heading-m"> Instructions </h2>'))
+                style = "color: white;background-color: #1d70b8;",
+                tags$h2("Instructions")
               ),
               div(
                 class = "panel-body",

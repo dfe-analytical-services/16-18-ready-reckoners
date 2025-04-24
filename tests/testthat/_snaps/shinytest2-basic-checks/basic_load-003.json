@@ -13,22 +13,6 @@
     "va_tabsetpanels": "All Students"
   },
   "output": {
-    "cohort_check_table": {
-      "message": "",
-      "call": "NULL",
-      "type": [
-        "shiny.silent.error",
-        "validation"
-      ]
-    },
-    "cohort_infobox": {
-      "message": "",
-      "call": "NULL",
-      "type": [
-        "shiny.silent.error",
-        "validation"
-      ]
-    },
     "input_preview": {
       "message": "",
       "call": "NULL",

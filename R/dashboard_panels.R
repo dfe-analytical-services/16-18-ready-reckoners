@@ -16,7 +16,7 @@ homepage_panel <- function() {
       gov_row(
         column(
           12,
-          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 revised data </h1>')),
+          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2024 final data </h1>')),
           br(),
           br()
         ),
@@ -261,7 +261,20 @@ data_upload_panel <- function() {
                   each qualification id (qual_id), exam cohort, qualification, subject and size:"),
                 downloadButton(
                   outputId = "qan_lookup_download",
-                  label = "Qualification number lookup table (csv, 100KB)",
+                  label = "Qualification number lookup table (csv, 150KB)",
+                  icon = NULL,
+                  class = "gov-uk-button-secondary"
+                ),
+                br(),
+                br()
+              ),
+              br(),
+              column(
+                width = 12,
+                p("Download the lookup table showing the points/grade available for each qualification id (qual_id)."),
+                downloadButton(
+                  outputId = "points_lookup_download",
+                  label = "Points lookup table (csv, 300KB)",
                   icon = NULL,
                   class = "gov-uk-button-secondary"
                 ),

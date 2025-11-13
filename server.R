@@ -988,7 +988,10 @@ server <- function(input, output, session) {
         by = "qual_id"
       ) %>%
       mutate(
-        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
+        subject_va_grade = case_when(
+          cohort_code == "6" ~ subject_va_pt1 / as.numeric(size),
+          TRUE ~ subject_va_pt1 / as.numeric(size) / 10
+        ),
         subject_standard_error = sd_suqu / sqrt(subject_student_count),
         lower_confidence_interval = subject_va_grade - (1.96 * subject_standard_error),
         upper_confidence_interval = subject_va_grade + (1.96 * subject_standard_error)
@@ -1025,7 +1028,10 @@ server <- function(input, output, session) {
       mutate(qual_standard_error_pt1 = (subject_standard_error * subject_student_count / qual_student_count)^2) %>%
       summarise(qual_standard_error_pt2 = sum(qual_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        qual_va_grade = qual_va_numerator / qual_va_denominator / 10,
+        qual_va_grade = case_when(
+          cohort_code == "6" ~ qual_va_numerator / qual_va_denominator,
+          TRUE ~ qual_va_numerator / qual_va_denominator / 10
+        ),
         qual_standard_error = sqrt(qual_standard_error_pt2),
         lower_confidence_interval = qual_va_grade - (1.96 * qual_standard_error),
         upper_confidence_interval = qual_va_grade + (1.96 * qual_standard_error)
@@ -1071,7 +1077,10 @@ server <- function(input, output, session) {
       ) %>%
       summarise(cohort_standard_error_pt2 = sum(cohort_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        cohort_va_grade = cohort_va_numerator / cohort_va_denominator / 10,
+        cohort_va_grade = case_when(
+          cohort_code == "6" ~ cohort_va_numerator / cohort_va_denominator,
+          TRUE ~ cohort_va_numerator / cohort_va_denominator / 10
+        ),
         cohort_standard_error = sqrt(cohort_standard_error_pt2),
         lower_confidence_interval = cohort_va_grade - (1.96 * cohort_standard_error),
         upper_confidence_interval = cohort_va_grade + (1.96 * cohort_standard_error)
@@ -1145,7 +1154,10 @@ server <- function(input, output, session) {
         by = "qual_id"
       ) %>%
       mutate(
-        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
+        subject_va_grade = case_when(
+          cohort_code == "6" ~ subject_va_pt1 / as.numeric(size),
+          TRUE ~ subject_va_pt1 / as.numeric(size) / 10
+        ),
         subject_standard_error = sd_suqu / sqrt(subject_student_count),
         lower_confidence_interval = subject_va_grade - (1.96 * subject_standard_error),
         upper_confidence_interval = subject_va_grade + (1.96 * subject_standard_error)
@@ -1175,7 +1187,10 @@ server <- function(input, output, session) {
       mutate(qual_standard_error_pt1 = (subject_standard_error * subject_student_count / qual_student_count)^2) %>%
       summarise(qual_standard_error_pt2 = sum(qual_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        qual_va_grade = qual_va_numerator / qual_va_denominator / 10,
+        qual_va_grade = case_when(
+          cohort_code == "6" ~ qual_va_numerator / qual_va_denominator,
+          TRUE ~ qual_va_numerator / qual_va_denominator / 10
+        ),
         qual_standard_error = sqrt(qual_standard_error_pt2),
         lower_confidence_interval = qual_va_grade - (1.96 * qual_standard_error),
         upper_confidence_interval = qual_va_grade + (1.96 * qual_standard_error)
@@ -1209,7 +1224,10 @@ server <- function(input, output, session) {
       ) %>%
       summarise(cohort_standard_error_pt2 = sum(cohort_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        cohort_va_grade = cohort_va_numerator / cohort_va_denominator / 10,
+        cohort_va_grade = case_when(
+          cohort_code == "6" ~ cohort_va_numerator / cohort_va_denominator,
+          TRUE ~ cohort_va_numerator / cohort_va_denominator / 10
+        ),
         cohort_standard_error = sqrt(cohort_standard_error_pt2),
         lower_confidence_interval = cohort_va_grade - (1.96 * cohort_standard_error),
         upper_confidence_interval = cohort_va_grade + (1.96 * cohort_standard_error)

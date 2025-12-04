@@ -14,11 +14,14 @@
 
 
 ## function to read in a workbook with multiple sheets
-func_read_multiplesheets <- function(workbook) {
+func_read_multiplesheets <- function(workbook, year_to_add) {
   # get the sheet names from within the workbook
   sheet_names <- excel_sheets(workbook)
   # read in each of the sheets from the workbook
-  tibble <- lapply(sheet_names, function(x) read_excel(workbook, sheet = x))
+  tibble <- lapply(sheet_names, function(x) {
+    read_excel(workbook, sheet = x) %>%
+      mutate(year = year_to_add)
+  })
   data_frame <- lapply(tibble, as.data.frame)
 
   # assigning names to data frames
@@ -27,6 +30,8 @@ func_read_multiplesheets <- function(workbook) {
   # print(data_frame)
   return(data_frame)
 }
+
+
 
 
 # func_read_multiplesheets <- function(workbook) {

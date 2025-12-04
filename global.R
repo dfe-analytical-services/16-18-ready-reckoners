@@ -112,12 +112,33 @@ google_analytics_key <- "72QXVY0V75"
 source("R/read_data.R")
 
 
-
 # -----------------------------------------------------------------------------------------------------------------------------
 # ---- read in the ready reckoner data from the Excel spreadsheet ----
 # -----------------------------------------------------------------------------------------------------------------------------
 
-data <- func_read_multiplesheets("data/2025U_l3va_step5_outputs_Rversion.xlsx")
+## expand this list at the begining of each cycle
+data_2025U <- func_read_multiplesheets("data/2025U_l3va_step5_outputs_Rversion.xlsx", 2025)
+data_2024F <- func_read_multiplesheets("data/2024F_l3va_step5_outputs_Rversion_redacted.xlsx", 2024)
+
+
+# get the sheet names - would need to update this each year with latest year data
+# relies on sheet names not changing between runs
+sheet_names <- names(data_2025U)
+
+# combine corresponding sheets
+# would also need to expand each year
+full_data <- lapply(sheet_names, function(sheet) {
+  bind_rows(
+    data_2025U[[sheet]],
+    data_2024F[[sheet]]
+  )
+})
+
+# fix sheet names
+names(full_data) <- sheet_names
+
+
+
 
 template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
 
@@ -125,7 +146,7 @@ template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
 
 
 
-data$qualid_lookup <- data$qualid_lookup %>%
+full_data$qualid_lookup <- full_data$qualid_lookup %>%
   mutate(cohort_code = as.character(cohort_code))
 
 # -----------------------------------------------------------------------------------------------------------------------------

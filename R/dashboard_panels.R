@@ -207,6 +207,25 @@ data_upload_panel <- function() {
               br(),
               column(
                 width = 12,
+                h4("Step 1:"),
+                br(),
+                p("Please select the academic year your institution data corresponds to."),
+                column(
+                  width = 6,
+                  selectizeInput(
+                    inputId = "dropdown_year",
+                    label = "Select a year",
+                    choices = unique(full_data$national_bands),
+                    selected = "2025"
+                  )
+                ),
+                br(),
+                br(),
+                br(),
+                br(),
+                br(),
+                h4("Step 2:"),
+                br(),
                 p("Please upload a .csv file containing the student data for your institution, ready to be used in the Ready Reckoner."),
                 p("The student data template and a lookup table for cohort, qualification and subject codes can be found in the 'Templates and lookups' tab above."),
                 fileInput("upload", NULL, buttonLabel = "Browse", accept = c(".csv")),
@@ -548,7 +567,7 @@ subject_va_panel <- function() {
                   selectizeInput(
                     inputId = "dropdown_cohort",
                     label = "Select an exam cohort",
-                    choices = unique(data$qualid_lookup$cohort_name),
+                    choices = unique(data()$qualid_lookup$cohort_name),
                     selected = "A level"
                   )
                 ),
@@ -557,7 +576,7 @@ subject_va_panel <- function() {
                   selectizeInput(
                     inputId = "dropdown_qualifications",
                     label = "Select a qualification",
-                    choices = unique(data$qualid_lookup$qualification_name),
+                    choices = unique(data()$qualid_lookup$qualification_name),
                     selected = "GCE A level"
                   )
                 ),
@@ -566,7 +585,7 @@ subject_va_panel <- function() {
                   selectizeInput(
                     inputId = "dropdown_subjects",
                     label = "Select a subject",
-                    choices = unique(data$qualid_lookup$subject_name),
+                    choices = unique(data()$qualid_lookup$subject_name),
                     selected = "Mathematics"
                   )
                 ),
@@ -575,7 +594,7 @@ subject_va_panel <- function() {
                   selectizeInput(
                     inputId = "dropdown_sizes",
                     label = "Select a size",
-                    choices = unique(data$qualid_lookup$size)
+                    choices = unique(data()$qualid_lookup$size)
                   )
                 ),
                 column(

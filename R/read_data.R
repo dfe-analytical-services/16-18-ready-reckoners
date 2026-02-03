@@ -12,7 +12,6 @@
 # datafiles_log.csv.
 
 
-
 ## function to read in a workbook with multiple sheets
 func_read_multiplesheets <- function(workbook, year_to_add) {
   # get the sheet names from within the workbook
@@ -30,8 +29,6 @@ func_read_multiplesheets <- function(workbook, year_to_add) {
   # print(data_frame)
   return(data_frame)
 }
-
-
 
 
 # func_read_multiplesheets <- function(workbook) {

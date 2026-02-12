@@ -46,7 +46,6 @@ shhh(library(reactable))
 enableBookmarking("url")
 
 
-
 # Rounding -------------------------------------
 round2 <- function(x, n) {
   posneg <- sign(x)
@@ -60,9 +59,6 @@ round2 <- function(x, n) {
 
 # Function defined for not in -------------------------------------
 `%not_in%` <- purrr::negate(`%in%`)
-
-
-
 
 
 # Source scripts ---------------------------------------------------------------
@@ -138,12 +134,7 @@ full_data <- lapply(sheet_names, function(sheet) {
 names(full_data) <- sheet_names
 
 
-
-
 template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
-
-
-
 
 
 full_data$qualid_lookup <- full_data$qualid_lookup %>%

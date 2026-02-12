@@ -124,8 +124,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- USER DATA UPLOAD - OUTPUT IN THE DATA UPLOAD TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -306,8 +304,6 @@ server <- function(input, output, session) {
   output$no_user_data1 <- renderText({
     missing_upload_message1()
   })
-
-
 
 
   ## for use in the student value added table tab (displayed at top)
@@ -523,7 +519,6 @@ server <- function(input, output, session) {
   # })
 
 
-
   ## 3. QUALIFICATION CHECKS
   ## Does qualification name and qualification code match as expected?
 
@@ -581,7 +576,6 @@ server <- function(input, output, session) {
   })
 
 
-
   ## 4. SUBJECT CHECKS
   ## Does subject name and subject code match as expected?
 
@@ -637,7 +631,6 @@ server <- function(input, output, session) {
     }
     infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
-
 
 
   ## 5. QUALID CHECKS
@@ -788,9 +781,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- VA DERIVATIONS - BY STUDENT - OUTPUT IN THE STUDENT VALUE ADDED TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -936,7 +926,6 @@ server <- function(input, output, session) {
   })
 
 
-
   ## pupil VA download
 
   output$pupil_va_download2 <- renderUI({
@@ -1074,8 +1063,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- HEADLINE VA DERIVATIONS - BY COHORT ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1123,8 +1110,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- DISADVANTAGED HEADLINE VA DERIVATIONS - BY COHORT ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1135,7 +1120,6 @@ server <- function(input, output, session) {
 
     sum(pupil_pava_bands_filtered()$disadvantaged_status)
   })
-
 
 
   pupil_va_disadvantaged <- reactive({
@@ -1270,8 +1254,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- DROPDOWN BOXES - OUTPUT IN THE NATIONAL COMPARISON TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1391,9 +1373,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- QUAL_ID ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1470,14 +1449,12 @@ server <- function(input, output, session) {
   })
 
 
-
   ## select which input data to use for the chart based on the radio button selected in the app
   subject_chart_data <- reactive(if (input$data_source == "National data only") {
     national_subject_chart_data()
   } else {
     user_subject_chart_data()
   })
-
 
 
   output$subject_chart <- renderPlot({
@@ -1522,11 +1499,9 @@ server <- function(input, output, session) {
   })
 
 
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- SUBJECT LEVEL VA DATA BOXES - OUTPUT IN THE NATIONAL COMPARISON TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
-
 
 
   ## 1. derive number of entries for chosen qual_id
@@ -1659,7 +1634,6 @@ server <- function(input, output, session) {
       )
     }
   })
-
 
 
   # -----------------------------------------------------------------------------------------------------------------------------

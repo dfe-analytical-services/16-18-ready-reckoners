@@ -46,7 +46,6 @@ shhh(library(reactable))
 enableBookmarking("url")
 
 
-
 # Rounding -------------------------------------
 round2 <- function(x, n) {
   posneg <- sign(x)
@@ -60,9 +59,6 @@ round2 <- function(x, n) {
 
 # Function defined for not in -------------------------------------
 `%not_in%` <- purrr::negate(`%in%`)
-
-
-
 
 
 # Source scripts ---------------------------------------------------------------
@@ -117,19 +113,19 @@ source("R/read_data.R")
 # -----------------------------------------------------------------------------------------------------------------------------
 
 ## expand this list at the begining of each cycle
-data_2025U <- func_read_multiplesheets("data/2025U_l3va_step5_outputs_Rversion.xlsx", 2025)
+data_2025A <- func_read_multiplesheets("data/2025A_l3va_step5_outputs_Rversion.xlsx", 2025)
 data_2024F <- func_read_multiplesheets("data/2024F_l3va_step5_outputs_Rversion_redacted.xlsx", 2024)
 
 
 # get the sheet names - would need to update this each year with latest year data
 # relies on sheet names not changing between runs
-sheet_names <- names(data_2025U)
+sheet_names <- names(data_2025A)
 
 # combine corresponding sheets
 # would also need to expand each year
 full_data <- lapply(sheet_names, function(sheet) {
   bind_rows(
-    data_2025U[[sheet]],
+    data_2025A[[sheet]],
     data_2024F[[sheet]]
   )
 })
@@ -138,12 +134,7 @@ full_data <- lapply(sheet_names, function(sheet) {
 names(full_data) <- sheet_names
 
 
-
-
 template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
-
-
-
 
 
 full_data$qualid_lookup <- full_data$qualid_lookup %>%

@@ -15,7 +15,7 @@ homepage_panel <- function() {
       gov_row(
         column(
           12,
-          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2025 revised data </h1>')),
+          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2025 final data </h1>')),
           br(),
           br()
         ),
@@ -214,8 +214,10 @@ data_upload_panel <- function() {
                   selectizeInput(
                     inputId = "dropdown_year",
                     label = "Select a year",
-                    choices = unique(full_data$national_bands),
-                    selected = "2025"
+                    # choices = unique(full_data$national_bands),
+                    # selected = "2025"
+                    choices = unique(paste0(full_data$national_bands$year - 1, "/", substr(full_data$national_bands$year, 3, 4))),
+                    selected = paste0(max(full_data$national_bands$year) - 1, "/", substr(max(full_data$national_bands$year), 3, 4))
                   )
                 ),
                 br(),

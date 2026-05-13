@@ -100,11 +100,16 @@ server <- function(input, output, session) {
     updateSelectInput(session,
       inputId = "dropdown_year",
       label = NULL,
+      # choices <- full_data$national_bands %>%
+      #   select(year) %>%
+      #   distinct() %>%
+      #   pull(year) %>%
+      #   sort(decreasing = TRUE)
       choices <- full_data$national_bands %>%
-        select(year) %>%
-        distinct() %>%
-        pull(year) %>%
-        sort(decreasing = TRUE)
+        distinct(year) %>%
+        arrange(desc(year)) %>%
+        mutate(year = paste0(year - 1, "/", substr(year, 3, 4))) %>%
+        pull(year)
     )
   })
 
@@ -118,7 +123,8 @@ server <- function(input, output, session) {
 
     lapply(full_data, function(df) {
       df %>%
-        filter(year == input$dropdown_year) %>%
+        # filter(year == input$dropdown_year) %>%
+        filter(year == paste0(substr(input$dropdown_year, 1, 2), substr(input$dropdown_year, 6, 7))) %>%
         select(-year)
     })
   })

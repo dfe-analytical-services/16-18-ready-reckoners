@@ -15,8 +15,7 @@ homepage_panel <- function() {
       gov_row(
         column(
           12,
-          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2025 revised data </h1>')),
-          br(),
+          tags$div(HTML('<h1 class="govuk-heading-l"> 16-18 Ready Reckoner: 2025 final data </h1>')),
           br()
         ),
 
@@ -29,9 +28,8 @@ homepage_panel <- function() {
               class = "panel panel-info",
               div(
                 class = "panel-heading",
-                style = "color: white;font-size: 18px;font-style: bold;
-                background-color: #1d70b8;",
-                tags$div(HTML('<h2 class="govuk-heading-m"> Information </h2>'))
+                style = "color: white; background-color: #1d70b8;",
+                tags$h2("Information")
               ),
               div(
                 class = "panel-body",
@@ -97,9 +95,8 @@ homepage_panel <- function() {
               class = "panel panel-info",
               div(
                 class = "panel-heading",
-                style = "color: white;font-size: 18px;font-style: bold;
-                background-color: #1d70b8;",
-                tags$div(HTML('<h2 class="govuk-heading-m"> Instructions </h2>'))
+                style = "color: white;background-color: #1d70b8;",
+                tags$h2("Instructions")
               ),
               div(
                 class = "panel-body",
@@ -214,8 +211,10 @@ data_upload_panel <- function() {
                   selectizeInput(
                     inputId = "dropdown_year",
                     label = "Select a year",
-                    choices = unique(full_data$national_bands),
-                    selected = "2025"
+                    # choices = unique(full_data$national_bands),
+                    # selected = "2025"
+                    choices = unique(paste0(full_data$national_bands$year - 1, "/", substr(full_data$national_bands$year, 3, 4))),
+                    selected = paste0(max(full_data$national_bands$year) - 1, "/", substr(max(full_data$national_bands$year), 3, 4))
                   )
                 ),
                 br(),

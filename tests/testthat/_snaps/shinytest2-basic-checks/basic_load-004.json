@@ -15,6 +15,7 @@
     "dropdown_qualifications": "GCE A level",
     "dropdown_sizes": "1",
     "dropdown_subjects": "Accounting/Finance",
+    "dropdown_year": "2024/25",
     "link_to_user_upload_tab": 0,
     "n": 5,
     "navlistPanel": "va_student_dashboard",
@@ -22,22 +23,6 @@
     "va_tabsetpanels": "All Students"
   },
   "output": {
-    "cohort_check_table": {
-      "message": "",
-      "call": "NULL",
-      "type": [
-        "shiny.silent.error",
-        "validation"
-      ]
-    },
-    "cohort_infobox": {
-      "message": "",
-      "call": "NULL",
-      "type": [
-        "shiny.silent.error",
-        "validation"
-      ]
-    },
     "input_preview": {
       "message": "",
       "call": "NULL",

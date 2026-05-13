@@ -46,7 +46,6 @@ shhh(library(reactable))
 enableBookmarking("url")
 
 
-
 # Rounding -------------------------------------
 round2 <- function(x, n) {
   posneg <- sign(x)
@@ -60,9 +59,6 @@ round2 <- function(x, n) {
 
 # Function defined for not in -------------------------------------
 `%not_in%` <- purrr::negate(`%in%`)
-
-
-
 
 
 # Source scripts ---------------------------------------------------------------
@@ -84,7 +80,7 @@ appLoadingCSS <- "
   opacity: 0.9;
   z-index: 100;
   left: 0;
-  right: 0;
+  right: 0;S
   height: 100%;
   text-align: center;
   color: #FFFFFF;
@@ -112,20 +108,36 @@ google_analytics_key <- "72QXVY0V75"
 source("R/read_data.R")
 
 
-
 # -----------------------------------------------------------------------------------------------------------------------------
 # ---- read in the ready reckoner data from the Excel spreadsheet ----
 # -----------------------------------------------------------------------------------------------------------------------------
 
-data <- func_read_multiplesheets("data/2024F_l3va_step5_outputs_Rversion_redacted.xlsx")
+## expand this list at the begining of each cycle
+data_2025F <- func_read_multiplesheets("data/2025F_l3va_step5_outputs_Rversion.xlsx", 2025)
+data_2024F <- func_read_multiplesheets("data/2024F_l3va_step5_outputs_Rversion_redacted.xlsx", 2024)
+
+
+# get the sheet names - would need to update this each year with latest year data
+# relies on sheet names not changing between runs
+sheet_names <- names(data_2025F)
+
+# combine corresponding sheets
+# would also need to expand each year
+full_data <- lapply(sheet_names, function(sheet) {
+  bind_rows(
+    data_2025F[[sheet]],
+    data_2024F[[sheet]]
+  )
+})
+
+# fix sheet names
+names(full_data) <- sheet_names
+
 
 template_data <- read.csv("data/pupil_upload_template.csv", check.names = FALSE)
 
 
-
-
-
-data$qualid_lookup <- data$qualid_lookup %>%
+full_data$qualid_lookup <- full_data$qualid_lookup %>%
   mutate(cohort_code = as.character(cohort_code))
 
 # -----------------------------------------------------------------------------------------------------------------------------

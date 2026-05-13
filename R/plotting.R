@@ -1,18 +1,6 @@
 # message("Sourcing plotting")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # createAvgRevTimeSeries <- function(df, inputArea) {
 #   ggplot(df, aes(
 #     x = year,

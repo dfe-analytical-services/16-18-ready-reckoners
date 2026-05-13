@@ -93,6 +93,44 @@ server <- function(input, output, session) {
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- DROPDOWN BOXES - OUTPUT IN THE DATA UPLOAD TAB ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+  observe({
+    updateSelectInput(session,
+      inputId = "dropdown_year",
+      label = NULL,
+      # choices <- full_data$national_bands %>%
+      #   select(year) %>%
+      #   distinct() %>%
+      #   pull(year) %>%
+      #   sort(decreasing = TRUE)
+      choices <- full_data$national_bands %>%
+        distinct(year) %>%
+        arrange(desc(year)) %>%
+        mutate(year = paste0(year - 1, "/", substr(year, 3, 4))) %>%
+        pull(year)
+    )
+  })
+
+  # -----------------------------------------------------------------------------------------------------------------------------
+  # ---- FILTER UNDERLYING DATA FOR USER SELECTED YEAR ----
+  # -----------------------------------------------------------------------------------------------------------------------------
+
+
+  data <- reactive({
+    req(input$dropdown_year)
+
+    lapply(full_data, function(df) {
+      df %>%
+        # filter(year == input$dropdown_year) %>%
+        filter(year == paste0(substr(input$dropdown_year, 1, 2), substr(input$dropdown_year, 6, 7))) %>%
+        select(-year)
+    })
+  })
+
+
+  # -----------------------------------------------------------------------------------------------------------------------------
   # ---- USER DATA UPLOAD - OUTPUT IN THE DATA UPLOAD TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
 
@@ -207,21 +245,21 @@ server <- function(input, output, session) {
   output$model_data_download <- downloadHandler(
     filename = "national_model_data.csv",
     content = function(file) {
-      write.csv(data$national_bands, file, row.names = FALSE)
+      write.csv(data()$national_bands, file, row.names = FALSE)
     }
   )
 
   output$subject_variance_download <- downloadHandler(
     filename = "subject_variance_data.csv",
     content = function(file) {
-      write.csv(data$subject_variance, file, row.names = FALSE)
+      write.csv(data()$subject_variance, file, row.names = FALSE)
     }
   )
 
   output$disadvantaged_subject_variance_download <- downloadHandler(
     filename = "disadvantaged_subject_variance_data.csv",
     content = function(file) {
-      write.csv(data$disadvantaged_subject_variance, file, row.names = FALSE)
+      write.csv(data()$disadvantaged_subject_variance, file, row.names = FALSE)
     }
   )
 
@@ -239,21 +277,21 @@ server <- function(input, output, session) {
   output$qualid_lookup_download <- downloadHandler(
     filename = "qualification_lookup.csv",
     content = function(file) {
-      write.csv(data$qualid_lookup, file, row.names = FALSE)
+      write.csv(data()$qualid_lookup, file, row.names = FALSE)
     }
   )
 
   output$qan_lookup_download <- downloadHandler(
     filename = "qan_lookup.csv",
     content = function(file) {
-      write.csv(data$qan_lookup, file, row.names = FALSE)
+      write.csv(data()$qan_lookup, file, row.names = FALSE)
     }
   )
 
   output$points_lookup_download <- downloadHandler(
     filename = "points_lookup.csv",
     content = function(file) {
-      write.csv(data$points_lookup, file, row.names = FALSE)
+      write.csv(data()$points_lookup, file, row.names = FALSE)
     }
   )
 
@@ -272,8 +310,6 @@ server <- function(input, output, session) {
   output$no_user_data1 <- renderText({
     missing_upload_message1()
   })
-
-
 
 
   ## for use in the student value added table tab (displayed at top)
@@ -352,7 +388,7 @@ server <- function(input, output, session) {
     joined_data <- user_data_academic() %>%
       select(-c(qual_id, cohort_name, qualification_name, subject_name)) %>%
       left_join(
-        data$qualid_lookup %>% select(
+        data()$qualid_lookup %>% select(
           qual_id,
           cohort_code, cohort_name,
           qualification_code, qualification_name,
@@ -489,7 +525,6 @@ server <- function(input, output, session) {
   # })
 
 
-
   ## 3. QUALIFICATION CHECKS
   ## Does qualification name and qualification code match as expected?
 
@@ -547,7 +582,6 @@ server <- function(input, output, session) {
   })
 
 
-
   ## 4. SUBJECT CHECKS
   ## Does subject name and subject code match as expected?
 
@@ -603,7 +637,6 @@ server <- function(input, output, session) {
     }
     infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
-
 
 
   ## 5. QUALID CHECKS
@@ -669,7 +702,7 @@ server <- function(input, output, session) {
 
     prioratt_exceeds_upper <- user_data_academic() %>%
       select(-c(qualification_name, subject_name, cohort_name)) %>%
-      left_join(data$national_bands, by = "qual_id") %>%
+      left_join(data()$national_bands, by = "qual_id") %>%
       filter(prior_attainment > x_21) %>%
       mutate(x_0 = "-")
   })
@@ -679,7 +712,7 @@ server <- function(input, output, session) {
 
     prioratt_exceeds_lower <- user_data_academic() %>%
       select(-c(qualification_name, subject_name, cohort_name)) %>%
-      left_join(data$national_bands, by = "qual_id") %>%
+      left_join(data()$national_bands, by = "qual_id") %>%
       filter(prior_attainment < x_0) %>%
       mutate(x_21 = "-")
   })
@@ -754,9 +787,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- VA DERIVATIONS - BY STUDENT - OUTPUT IN THE STUDENT VALUE ADDED TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -780,7 +810,7 @@ server <- function(input, output, session) {
 
     user_data_final() %>%
       select(-c(qualification_name, subject_name, cohort_name)) %>%
-      left_join(data$national_bands, by = "qual_id") %>%
+      left_join(data()$national_bands, by = "qual_id") %>%
       pivot_longer(
         cols = starts_with(c("x", "y")),
         cols_vary = "slowest",
@@ -796,7 +826,7 @@ server <- function(input, output, session) {
 
     user_data_final() %>%
       select(-c(qualification_name, subject_name, cohort_name)) %>%
-      left_join(data$national_bands, by = "qual_id")
+      left_join(data()$national_bands, by = "qual_id")
   })
 
 
@@ -894,13 +924,12 @@ server <- function(input, output, session) {
         value_added = actual_points - estimated_points
       ) %>%
       select(all_of(common_column_names), estimated_points, value_added) %>%
-      left_join(data$subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
+      left_join(data()$subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
       mutate(
         value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
         value_added_qual_weight = value_added * (weighting / as.numeric(size))
       )
   })
-
 
 
   ## pupil VA download
@@ -983,12 +1012,15 @@ server <- function(input, output, session) {
         subject_va_pt1 = mean(value_added)
       ) %>%
       left_join(
-        data$subject_variance %>%
+        data()$subject_variance %>%
           select(qual_id, qual_co_id, sd_suqu),
         by = "qual_id"
       ) %>%
       mutate(
-        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
+        subject_va_grade = case_when(
+          cohort_code == "6" ~ subject_va_pt1 / as.numeric(size),
+          TRUE ~ subject_va_pt1 / as.numeric(size) / 10
+        ),
         subject_standard_error = sd_suqu / sqrt(subject_student_count),
         lower_confidence_interval = subject_va_grade - (1.96 * subject_standard_error),
         upper_confidence_interval = subject_va_grade + (1.96 * subject_standard_error)
@@ -1025,15 +1057,16 @@ server <- function(input, output, session) {
       mutate(qual_standard_error_pt1 = (subject_standard_error * subject_student_count / qual_student_count)^2) %>%
       summarise(qual_standard_error_pt2 = sum(qual_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        qual_va_grade = qual_va_numerator / qual_va_denominator / 10,
+        qual_va_grade = case_when(
+          cohort_code == "6" ~ qual_va_numerator / qual_va_denominator,
+          TRUE ~ qual_va_numerator / qual_va_denominator / 10
+        ),
         qual_standard_error = sqrt(qual_standard_error_pt2),
         lower_confidence_interval = qual_va_grade - (1.96 * qual_standard_error),
         upper_confidence_interval = qual_va_grade + (1.96 * qual_standard_error)
       ) %>%
       ungroup()
   })
-
-
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1071,15 +1104,16 @@ server <- function(input, output, session) {
       ) %>%
       summarise(cohort_standard_error_pt2 = sum(cohort_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        cohort_va_grade = cohort_va_numerator / cohort_va_denominator / 10,
+        cohort_va_grade = case_when(
+          cohort_code == "6" ~ cohort_va_numerator / cohort_va_denominator,
+          TRUE ~ cohort_va_numerator / cohort_va_denominator / 10
+        ),
         cohort_standard_error = sqrt(cohort_standard_error_pt2),
         lower_confidence_interval = cohort_va_grade - (1.96 * cohort_standard_error),
         upper_confidence_interval = cohort_va_grade + (1.96 * cohort_standard_error)
       ) %>%
       ungroup()
   })
-
-
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1092,7 +1126,6 @@ server <- function(input, output, session) {
 
     sum(pupil_pava_bands_filtered()$disadvantaged_status)
   })
-
 
 
   pupil_va_disadvantaged <- reactive({
@@ -1120,7 +1153,7 @@ server <- function(input, output, session) {
         value_added = actual_points - estimated_points
       ) %>%
       select(all_of(common_column_names), estimated_points, value_added) %>%
-      left_join(data$disadvantaged_subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
+      left_join(data()$disadvantaged_subject_variance %>% select(qual_id, qual_co_id, subj_weighting, weighting), by = "qual_id") %>%
       mutate(
         value_added_subj_weight = value_added * (subj_weighting / as.numeric(size)),
         value_added_qual_weight = value_added * (weighting / as.numeric(size))
@@ -1140,12 +1173,15 @@ server <- function(input, output, session) {
         subject_va_pt1 = mean(value_added)
       ) %>%
       left_join(
-        data$disadvantaged_subject_variance %>%
+        data()$disadvantaged_subject_variance %>%
           select(qual_id, qual_co_id, sd_suqu),
         by = "qual_id"
       ) %>%
       mutate(
-        subject_va_grade = subject_va_pt1 / 10 / as.numeric(size),
+        subject_va_grade = case_when(
+          cohort_code == "6" ~ subject_va_pt1 / as.numeric(size),
+          TRUE ~ subject_va_pt1 / as.numeric(size) / 10
+        ),
         subject_standard_error = sd_suqu / sqrt(subject_student_count),
         lower_confidence_interval = subject_va_grade - (1.96 * subject_standard_error),
         upper_confidence_interval = subject_va_grade + (1.96 * subject_standard_error)
@@ -1175,7 +1211,10 @@ server <- function(input, output, session) {
       mutate(qual_standard_error_pt1 = (subject_standard_error * subject_student_count / qual_student_count)^2) %>%
       summarise(qual_standard_error_pt2 = sum(qual_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        qual_va_grade = qual_va_numerator / qual_va_denominator / 10,
+        qual_va_grade = case_when(
+          cohort_code == "6" ~ qual_va_numerator / qual_va_denominator,
+          TRUE ~ qual_va_numerator / qual_va_denominator / 10
+        ),
         qual_standard_error = sqrt(qual_standard_error_pt2),
         lower_confidence_interval = qual_va_grade - (1.96 * qual_standard_error),
         upper_confidence_interval = qual_va_grade + (1.96 * qual_standard_error)
@@ -1209,15 +1248,16 @@ server <- function(input, output, session) {
       ) %>%
       summarise(cohort_standard_error_pt2 = sum(cohort_standard_error_pt1, na.rm = TRUE)) %>%
       mutate(
-        cohort_va_grade = cohort_va_numerator / cohort_va_denominator / 10,
+        cohort_va_grade = case_when(
+          cohort_code == "6" ~ cohort_va_numerator / cohort_va_denominator,
+          TRUE ~ cohort_va_numerator / cohort_va_denominator / 10
+        ),
         cohort_standard_error = sqrt(cohort_standard_error_pt2),
         lower_confidence_interval = cohort_va_grade - (1.96 * cohort_standard_error),
         upper_confidence_interval = cohort_va_grade + (1.96 * cohort_standard_error)
       ) %>%
       ungroup()
   })
-
-
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1231,7 +1271,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_cohort",
         label = NULL,
-        choices <- data$qualid_lookup %>%
+        choices <- data()$qualid_lookup %>%
           select(cohort_name) %>%
           distinct() %>%
           pull(cohort_name) %>%
@@ -1242,7 +1282,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_qualifications",
         label = NULL,
-        choices <- data$qualid_lookup %>%
+        choices <- data()$qualid_lookup %>%
           select(cohort_name, qualification_name) %>%
           distinct() %>%
           filter(cohort_name == input$dropdown_cohort) %>%
@@ -1254,7 +1294,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_subjects",
         label = NULL,
-        choices <- data$qualid_lookup %>%
+        choices <- data()$qualid_lookup %>%
           select(cohort_name, qualification_name, subject_name) %>%
           distinct() %>%
           filter(
@@ -1269,7 +1309,7 @@ server <- function(input, output, session) {
       updateSelectInput(session,
         inputId = "dropdown_sizes",
         label = NULL,
-        choices <- data$qualid_lookup %>%
+        choices <- data()$qualid_lookup %>%
           select(cohort_name, qualification_name, subject_name, size) %>%
           distinct() %>%
           filter(
@@ -1339,9 +1379,6 @@ server <- function(input, output, session) {
   })
 
 
-
-
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- QUAL_ID ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1354,7 +1391,7 @@ server <- function(input, output, session) {
     req(input$dropdown_subjects)
     req(input$dropdown_sizes)
 
-    data$qualid_lookup %>%
+    data()$qualid_lookup %>%
       filter(
         cohort_name == input$dropdown_cohort,
         qualification_name == input$dropdown_qualifications,
@@ -1374,7 +1411,7 @@ server <- function(input, output, session) {
 
     # print(reactive_qualid())
 
-    full_chart_data <- data$national_bands %>%
+    full_chart_data <- data()$national_bands %>%
       filter(qual_id == as.character(reactive_qualid())) %>%
       select(starts_with(c("x", "y"))) %>%
       pivot_longer(
@@ -1395,7 +1432,7 @@ server <- function(input, output, session) {
 
     # print(reactive_qualid())
 
-    line_chart_data <- data$national_bands %>%
+    line_chart_data <- data()$national_bands %>%
       filter(qual_id == as.character(reactive_qualid())) %>%
       select(starts_with(c("x", "y"))) %>%
       pivot_longer(
@@ -1418,14 +1455,12 @@ server <- function(input, output, session) {
   })
 
 
-
   ## select which input data to use for the chart based on the radio button selected in the app
   subject_chart_data <- reactive(if (input$data_source == "National data only") {
     national_subject_chart_data()
   } else {
     user_subject_chart_data()
   })
-
 
 
   output$subject_chart <- renderPlot({
@@ -1470,11 +1505,9 @@ server <- function(input, output, session) {
   })
 
 
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- SUBJECT LEVEL VA DATA BOXES - OUTPUT IN THE NATIONAL COMPARISON TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
-
 
 
   ## 1. derive number of entries for chosen qual_id
@@ -1609,7 +1642,6 @@ server <- function(input, output, session) {
   })
 
 
-
   # -----------------------------------------------------------------------------------------------------------------------------
   # ---- SUBJECT CHART POINTS/GRADE CORRELATION - OUTPUT IN THE NATIONAL COMPARISON TAB ----
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1618,7 +1650,7 @@ server <- function(input, output, session) {
     req(input$dropdown_qualifications)
     req(input$dropdown_sizes)
 
-    data$points_lookup %>%
+    data()$points_lookup %>%
       arrange(desc(points), grade) %>%
       filter(
         cohort_name == input$dropdown_cohort,

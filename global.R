@@ -40,6 +40,10 @@ shhh(library(shinycssloaders))
 # shhh(library(shinya11y))
 shhh(library(reactable))
 
+if (FALSE) {
+  shhh(library(rsconnect))
+}
+
 # Functions --------------------------------------------------------------------
 
 # This line enables bookmarking such that input choices are shown in the url.

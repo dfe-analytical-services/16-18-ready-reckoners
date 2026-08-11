@@ -58,7 +58,7 @@
 #
 
 ui <- function(input, output, session) {
-  fluidPage(
+  bslib::page(
     # use_tota11y(),
     title = tags$head(
       tags$link(
@@ -85,19 +85,13 @@ ui <- function(input, output, session) {
     useShinydashboard(),
     dfeshiny::custom_disconnect_message(dashboard_title = site_title),
     tags$head(includeHTML(("google-analytics.html"))),
-    tags$head(
-      tags$link(
-        rel = "stylesheet",
-        type = "text/css",
-        href = "dfe_shiny_gov_style.css"
-      )
-    ),
     dfeshiny::dfe_cookies_script(),
     dfeshiny::cookies_banner_ui(
       name = site_title
     ),
-    dfeshiny::header(
-      header = site_title
+    shinyGovstyle::full_width_overrides(),
+    shinyGovstyle::header(
+      "Department for Education"
     ),
     shinyGovstyle::banner(
       "beta banner",

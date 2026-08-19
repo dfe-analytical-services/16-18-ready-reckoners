@@ -13,24 +13,6 @@
     "va_tabsetpanels": "All Students"
   },
   "output": {
-    "ci": {
-      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
-      "deps": [
 
-      ]
-    },
-    "no_user_data3": "",
-    "subject_entries": {
-      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
-      "deps": [
-
-      ]
-    },
-    "subject_va_grade": {
-      "html": "<div class=\"small-box bg-purple\">\n  <div class=\"inner\">\n    <p id=\"vboxhead-medium\">-<\/p>\n    <p id=\"vboxdetail-medium\">Please upload student data<\/p>\n  <\/div>\n<\/div>",
-      "deps": [
-
-      ]
-    }
   }
 }

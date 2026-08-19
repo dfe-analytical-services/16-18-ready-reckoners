@@ -1,6 +1,8 @@
 {
   "input": {
     "a": 5,
+    "accessibility_statement": 0,
+    "accessibility_to_dashboard": 0,
     "cookies": {
 
     },
@@ -9,6 +11,8 @@
     "cookies_banner-cookies_reject": 0,
     "cookies_panel-cookies_analytics": "no",
     "cookies_panel-submit_btn": 0,
+    "cookies_statement": 0,
+    "cookies_to_dashboard": 0,
     "data_source": "National data only",
     "dataupload_tabsetpanels": "Student data",
     "dropdown_cohort": "A level",
@@ -16,9 +20,13 @@
     "dropdown_sizes": "1",
     "dropdown_subjects": "Accounting/Finance",
     "dropdown_year": "2024/25",
+    "ees_publication": 0,
     "link_to_user_upload_tab": 0,
     "n": 5,
     "navlistPanel": "va_student_dashboard",
+    "pages": "dashboard",
+    "support": 0,
+    "support_to_dashboard": 0,
     "upload": null,
     "va_tabsetpanels": "All Students"
   },
@@ -32,7 +40,6 @@
       ]
     },
     "no_user_data1": "<font color=\"#C65102\"><b> Please upload your student data. <\/b><\/font>",
-    "no_user_data2": "<font color=\"#C65102\"><b> Please upload your student data. <\/b><\/font>",
     "prioratt_check_table": {
       "message": "",
       "call": "NULL",
@@ -42,14 +49,6 @@
       ]
     },
     "prioratt_infobox": {
-      "message": "",
-      "call": "NULL",
-      "type": [
-        "shiny.silent.error",
-        "validation"
-      ]
-    },
-    "pupil_va_download2": {
       "message": "",
       "call": "NULL",
       "type": [
@@ -98,14 +97,6 @@
       ]
     },
     "removed_table": {
-      "message": "",
-      "call": "NULL",
-      "type": [
-        "shiny.silent.error",
-        "validation"
-      ]
-    },
-    "student_va_scores": {
       "message": "",
       "call": "NULL",
       "type": [

@@ -13,6 +13,13 @@
     "va_tabsetpanels": "All Students"
   },
   "output": {
-
+    "input_preview": {
+      "message": "",
+      "call": "NULL",
+      "type": [
+        "shiny.silent.error",
+        "validation"
+      ]
+    }
   }
 }

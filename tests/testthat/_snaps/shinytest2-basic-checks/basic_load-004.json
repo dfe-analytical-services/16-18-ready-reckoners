@@ -40,6 +40,7 @@
       ]
     },
     "no_user_data1": "<font color=\"#C65102\"><b> Please upload your student data. <\/b><\/font>",
+    "no_user_data2": "<font color=\"#C65102\"><b> Please upload your student data. <\/b><\/font>",
     "prioratt_check_table": {
       "message": "",
       "call": "NULL",
@@ -49,6 +50,14 @@
       ]
     },
     "prioratt_infobox": {
+      "message": "",
+      "call": "NULL",
+      "type": [
+        "shiny.silent.error",
+        "validation"
+      ]
+    },
+    "pupil_va_download2": {
       "message": "",
       "call": "NULL",
       "type": [
@@ -97,6 +106,14 @@
       ]
     },
     "removed_table": {
+      "message": "",
+      "call": "NULL",
+      "type": [
+        "shiny.silent.error",
+        "validation"
+      ]
+    },
+    "student_va_scores": {
       "message": "",
       "call": "NULL",
       "type": [

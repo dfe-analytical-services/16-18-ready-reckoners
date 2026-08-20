@@ -6008,11 +6008,11 @@
     },
     "terra": {
       "Package": "terra",
-      "Version": "1.9-34",
+      "Version": "1.9-27",
       "Source": "Repository",
       "Type": "Package",
       "Title": "Spatial Data Analysis",
-      "Date": "2026-06-18",
+      "Date": "2026-05-09",
       "Depends": [
         "R (>= 3.5.0)",
         "methods"
@@ -6022,7 +6022,6 @@
         "tinytest",
         "ncdf4",
         "sf (>= 0.9-8)",
-        "igraph",
         "deldir",
         "XML",
         "leaflet (>= 2.2.1)",

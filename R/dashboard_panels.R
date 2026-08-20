@@ -72,19 +72,19 @@ homepage_panel <- function() {
                   outputId = "model_data_download",
                   label = "Model data (csv, 500KB)",
                   icon = shiny::icon("download"),
-                  class = "downloadButton"
+                  class = "btn-primary"
                 ),
                 downloadButton(
                   outputId = "subject_variance_download",
                   label = "Subject variance (csv, 50KB)",
                   icon = shiny::icon("download"),
-                  class = "downloadButton"
+                  class = "btn-primary"
                 ),
                 downloadButton(
                   outputId = "disadvantaged_subject_variance_download",
                   label = "Disadvantaged subject variance (csv, 50KB)",
                   icon = shiny::icon("download"),
-                  class = "downloadButton"
+                  class = "btn-primary"
                 )
               )
             )
@@ -222,7 +222,15 @@ data_upload_panel <- function() {
                     heading_text("Step 2:", size = "s", level = 3),
                     gov_text("Please upload a .csv file containing the student data for your institution, ready to be used in the Ready Reckoner."),
                     gov_text("The student data template and a lookup table for cohort, qualification and subject codes can be found in the 'Templates and lookups' tab above."),
-                    fileInput("upload", NULL, buttonLabel = "Browse", accept = c(".csv"))
+                    fileInput(
+                      inputId = "upload",
+                      label = NULL,
+                      buttonLabel = tagList(
+                        icon("upload"),
+                        "Browse"
+                      ),
+                      accept = c(".csv")
+                    )
                   )
                 ),
                 column(
@@ -254,8 +262,8 @@ data_upload_panel <- function() {
                       downloadButton(
                         outputId = "student_data_template_download",
                         label = "Student data template (csv, 1KB)",
-                        icon = NULL,
-                        class = "gov-uk-button-secondary"
+                        icon = shiny::icon("download"),
+                        class = "btn-primary"
                       )
                     ),
                     br(),
@@ -265,8 +273,8 @@ data_upload_panel <- function() {
                       downloadButton(
                         outputId = "qualid_lookup_download",
                         label = "L3VA subject lookup table (csv, 50KB)",
-                        icon = NULL,
-                        class = "gov-uk-button-secondary"
+                        icon = shiny::icon("download"),
+                        class = "btn-primary"
                       )
                     ),
                     br(),
@@ -278,8 +286,8 @@ data_upload_panel <- function() {
                       downloadButton(
                         outputId = "qan_lookup_download",
                         label = "Qualification number lookup table (csv, 150KB)",
-                        icon = NULL,
-                        class = "gov-uk-button-secondary"
+                        icon = shiny::icon("download"),
+                        class = "btn-primary"
                       )
                     ),
                     br(),
@@ -289,8 +297,8 @@ data_upload_panel <- function() {
                       downloadButton(
                         outputId = "points_lookup_download",
                         label = "Points lookup table (csv, 300KB)",
-                        icon = NULL,
-                        class = "gov-uk-button-secondary"
+                        icon = shiny::icon("download"),
+                        class = "btn-primary"
                       )
                     )
                   )
@@ -351,8 +359,8 @@ data_checking_panel <- function() {
               downloadButton(
                 outputId = "removed_download",
                 label = "Removed data check",
-                icon = NULL,
-                class = "gov-uk-button-secondary"
+                icon = shiny::icon("download"),
+                class = "btn-primary"
               )
             )
           )
@@ -404,8 +412,8 @@ data_checking_panel <- function() {
               downloadButton(
                 outputId = "qualification_check_download",
                 label = "Qualification check",
-                icon = NULL,
-                class = "gov-uk-button-secondary"
+                icon = shiny::icon("download"),
+                class = "btn-primary"
               )
             )
           )
@@ -433,8 +441,8 @@ data_checking_panel <- function() {
               downloadButton(
                 outputId = "subject_check_download",
                 label = "Subject check",
-                icon = NULL,
-                class = "gov-uk-button-secondary"
+                icon = shiny::icon("download"),
+                class = "btn-primary"
               )
             )
           )
@@ -462,8 +470,8 @@ data_checking_panel <- function() {
               downloadButton(
                 outputId = "qualid_check_download",
                 label = "Qualification ID check",
-                icon = NULL,
-                class = "gov-uk-button-secondary"
+                icon = shiny::icon("download"),
+                class = "btn-primary"
               )
             )
           )
@@ -494,8 +502,8 @@ data_checking_panel <- function() {
               downloadButton(
                 outputId = "prioratt_check_download",
                 label = "Pupil prior attainment check",
-                icon = NULL,
-                class = "gov-uk-button-secondary"
+                icon = shiny::icon("download"),
+                class = "btn-primary"
               )
             )
           )

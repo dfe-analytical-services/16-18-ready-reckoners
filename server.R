@@ -22,6 +22,40 @@
 
 
 server <- function(input, output, session) {
+  # The template uses bookmarking to store input choices in the url. You can
+  # exclude specific inputs (for example extra info created for a datatable
+  # or plotly chart) using the list below, but it will need updating to match
+  # any entries in your own dashboard's bookmarking url that you don't want
+  # including.
+  setBookmarkExclude(c(
+    "cookies",
+    "link_to_app_content_tab",
+    "tabBenchmark_rows_current",
+    "tabBenchmark_rows_all",
+    "tabBenchmark_columns_selected",
+    "tabBenchmark_cell_clicked",
+    "tabBenchmark_cells_selected",
+    "tabBenchmark_search",
+    "tabBenchmark_rows_selected",
+    "tabBenchmark_row_last_clicked",
+    "tabBenchmark_state",
+    "plotly_relayout-A",
+    "plotly_click-A",
+    "plotly_hover-A",
+    "plotly_afterplot-A",
+    ".clientValue-default-plotlyCrosstalkOpts"
+  ))
+
+  observe({
+    # Trigger this observer every time an input changes
+    reactiveValuesToList(input)
+    session$doBookmark()
+  })
+
+  onBookmarked(function(url) {
+    updateQueryString(url)
+  })
+
   # Loading screen -------------------------------------------------------------
   # Call initial loading screen
 
@@ -38,33 +72,6 @@ server <- function(input, output, session) {
     input_cookies = shiny::reactive(input$cookies),
     google_analytics_key = google_analytics_key
   )
-
-  # The template uses bookmarking to store input choices in the url. You can
-  # exclude specific inputs (for example extra info created for a datatable
-  # or plotly chart) using the list below, but it will need updating to match
-  # any entries in your own dashboard's bookmarking url that you don't want
-  # including.
-  setBookmarkExclude(c(
-    "cookies", "link_to_app_content_tab",
-    "tabBenchmark_rows_current", "tabBenchmark_rows_all",
-    "tabBenchmark_columns_selected", "tabBenchmark_cell_clicked",
-    "tabBenchmark_cells_selected", "tabBenchmark_search",
-    "tabBenchmark_rows_selected", "tabBenchmark_row_last_clicked",
-    "tabBenchmark_state",
-    "plotly_relayout-A",
-    "plotly_click-A", "plotly_hover-A", "plotly_afterplot-A",
-    ".clientValue-default-plotlyCrosstalkOpts"
-  ))
-
-  observe({
-    # Trigger this observer every time an input changes
-    reactiveValuesToList(input)
-    session$doBookmark()
-  })
-
-  onBookmarked(function(url) {
-    updateQueryString(url)
-  })
 
   observe({
     if (input$navlistPanel == "dashboard") {
@@ -465,17 +472,38 @@ server <- function(input, output, session) {
     }
   )
 
-  output$removed_infobox <- renderInfoBox({
-    colour <- "olive"
-    infobox_text <- "No changes made to student data"
-    icon_symbol <- "check"
-    if (removed_check_summary() %>% count() >= 1) {
-      colour <- "maroon"
-      infobox_text <- "Data has been removed"
-      icon_symbol <- "exclamation"
+  output$removed_infobox <- renderUI({
+    if (nrow(removed_check_summary()) > 0) {
+      bslib::value_box(
+        title = "Summary",
+        value = "Data has been removed",
+        showcase = icon("triangle-exclamation"),
+        theme = "danger",
+        full_screen = FALSE
+      )
+    } else {
+      bslib::value_box(
+        title = "Summary",
+        value = "No changes made to student data",
+        showcase = icon("check"),
+        theme = "success",
+        full_screen = FALSE
+      )
     }
-    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
+
+
+  # output$removed_infobox <- shinydashboard::renderInfoBox({
+  #   colour <- "olive"
+  #   infobox_text <- "No changes made to student data"
+  #   icon_symbol <- "check"
+  #   if (removed_check_summary() %>% count() >= 1) {
+  #     colour <- "maroon"
+  #     infobox_text <- "Data has been removed"
+  #     icon_symbol <- "exclamation"
+  #   }
+  #   infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  # })
 
 
   ## 2. EXAM COHORT CHECKS
@@ -569,17 +597,37 @@ server <- function(input, output, session) {
     }
   )
 
-  output$qualification_infobox <- renderInfoBox({
-    colour <- "olive"
-    infobox_text <- "No changes made to student data"
-    icon_symbol <- "check"
-    if (qualification_check_summary() %>% count() >= 1) {
-      colour <- "maroon"
-      infobox_text <- "Changes made to student data"
-      icon_symbol <- "exclamation"
+  output$qualification_infobox <- renderUI({
+    if (nrow(qualification_check_summary()) > 0) {
+      bslib::value_box(
+        title = "Summary",
+        value = "Changes made to student data",
+        showcase = icon("triangle-exclamation"),
+        theme = "danger",
+        full_screen = FALSE
+      )
+    } else {
+      bslib::value_box(
+        title = "Summary",
+        value = "No changes made to student data",
+        showcase = icon("check"),
+        theme = "success",
+        full_screen = FALSE
+      )
     }
-    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
+
+  # output$qualification_infobox <- renderInfoBox({
+  #   colour <- "olive"
+  #   infobox_text <- "No changes made to student data"
+  #   icon_symbol <- "check"
+  #   if (qualification_check_summary() %>% count() >= 1) {
+  #     colour <- "maroon"
+  #     infobox_text <- "Changes made to student data"
+  #     icon_symbol <- "exclamation"
+  #   }
+  #   infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  # })
 
 
   ## 4. SUBJECT CHECKS
@@ -626,17 +674,37 @@ server <- function(input, output, session) {
     }
   )
 
-  output$subject_infobox <- renderInfoBox({
-    colour <- "olive"
-    infobox_text <- "No changes made to student data"
-    icon_symbol <- "check"
-    if (subject_check_summary() %>% count() >= 1) {
-      colour <- "maroon"
-      infobox_text <- "Changes made to student data"
-      icon_symbol <- "exclamation"
+  output$subject_infobox <- renderUI({
+    if (nrow(subject_check_summary()) > 0) {
+      bslib::value_box(
+        title = "Summary",
+        value = "Changes made to student data",
+        showcase = icon("triangle-exclamation"),
+        theme = "danger",
+        full_screen = FALSE
+      )
+    } else {
+      bslib::value_box(
+        title = "Summary",
+        value = "No changes made to student data",
+        showcase = icon("check"),
+        theme = "success",
+        full_screen = FALSE
+      )
     }
-    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
+
+  # output$subject_infobox <- renderInfoBox({
+  #   colour <- "olive"
+  #   infobox_text <- "No changes made to student data"
+  #   icon_symbol <- "check"
+  #   if (subject_check_summary() %>% count() >= 1) {
+  #     colour <- "maroon"
+  #     infobox_text <- "Changes made to student data"
+  #     icon_symbol <- "exclamation"
+  #   }
+  #   infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  # })
 
 
   ## 5. QUALID CHECKS
@@ -681,17 +749,37 @@ server <- function(input, output, session) {
     }
   )
 
-  output$qualid_infobox <- renderInfoBox({
-    colour <- "olive"
-    infobox_text <- "No changes made to student data"
-    icon_symbol <- "check"
-    if (qualid_check_summary() %>% count() >= 1) {
-      colour <- "maroon"
-      infobox_text <- "Changes made to student data"
-      icon_symbol <- "exclamation"
+  output$qualid_infobox <- renderUI({
+    if (nrow(qualid_check_summary()) > 0) {
+      bslib::value_box(
+        title = "Summary",
+        value = "Changes made to student data",
+        showcase = icon("triangle-exclamation"),
+        theme = "danger",
+        full_screen = FALSE
+      )
+    } else {
+      bslib::value_box(
+        title = "Summary",
+        value = "No changes made to student data",
+        showcase = icon("check"),
+        theme = "success",
+        full_screen = FALSE
+      )
     }
-    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
+
+  # output$qualid_infobox <- renderInfoBox({
+  #   colour <- "olive"
+  #   infobox_text <- "No changes made to student data"
+  #   icon_symbol <- "check"
+  #   if (qualid_check_summary() %>% count() >= 1) {
+  #     colour <- "maroon"
+  #     infobox_text <- "Changes made to student data"
+  #     icon_symbol <- "exclamation"
+  #   }
+  #   infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  # })
 
 
   ## 6. PRIOR ATTAINMENT CHECKS
@@ -752,17 +840,37 @@ server <- function(input, output, session) {
     }
   )
 
-  output$prioratt_infobox <- renderInfoBox({
-    colour <- "olive"
-    infobox_text <- "No changes made to student data"
-    icon_symbol <- "check"
-    if (prioratt_check_summary() %>% count() >= 1) {
-      colour <- "maroon"
-      infobox_text <- "Changes made to student data"
-      icon_symbol <- "exclamation"
+  output$prioratt_infobox <- renderUI({
+    if (nrow(prioratt_check_summary()) > 0) {
+      bslib::value_box(
+        title = "Summary",
+        value = "Changes made to student data",
+        showcase = icon("triangle-exclamation"),
+        theme = "danger",
+        full_screen = FALSE
+      )
+    } else {
+      bslib::value_box(
+        title = "Summary",
+        value = "No changes made to student data",
+        showcase = icon("check"),
+        theme = "success",
+        full_screen = FALSE
+      )
     }
-    infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
   })
+
+  # output$prioratt_infobox <- renderInfoBox({
+  #   colour <- "olive"
+  #   infobox_text <- "No changes made to student data"
+  #   icon_symbol <- "check"
+  #   if (prioratt_check_summary() %>% count() >= 1) {
+  #     colour <- "maroon"
+  #     infobox_text <- "Changes made to student data"
+  #     icon_symbol <- "exclamation"
+  #   }
+  #   infoBox(value = infobox_text, title = "Summary", color = colour, icon = icon(icon_symbol))
+  # })
 
 
   # -----------------------------------------------------------------------------------------------------------------------------
@@ -1474,7 +1582,7 @@ server <- function(input, output, session) {
 
     ggplot(subject_chart_data(), aes(x = x, y = y, color = source, shape = source)) +
       labs(
-        title = "KS4 prior attainment (points) compared with 16-18 attainment outcomes (points).",
+        # title = "KS4 prior attainment (points) compared with 16-18 attainment outcomes (points).",
         alt = "By defualt this line chart is displaying the national average value added line
            for the qualification and subject chosen using the drop down boxes.
            If the user selects to include National and student data the chart will update to
@@ -1524,27 +1632,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$subject_entries <- renderValueBox({
-    # Put value into box to plug into app
+  output$subject_entries <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        "Please upload student data",
+        theme = "secondary",
+        showcase = icon("upload")
       )
     } else if (input$data_source == "National data only") {
-      valueBox(
-        paste0("-"),
-        paste0("Select 'National and student data'"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        "Select 'National and student data'",
+        theme = "secondary",
+        showcase = icon("triangle-exclamation")
       )
     } else {
-      valueBox(
-        # take input number
-        paste0(subject_entries0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(subject_entries0()),
+        "Number of students",
+        theme = "primary",
+        showcase = icon("users")
       )
     }
   })
@@ -1564,27 +1675,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$subject_va_grade <- renderValueBox({
+  output$subject_va_grade <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        "Please upload student data",
+        theme = "secondary",
+        showcase = icon("upload")
       )
     } else if (input$data_source == "National data only") {
-      valueBox(
-        paste0("-"),
-        paste0("Select 'National and student data'"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        "Select 'National and student data'",
+        theme = "secondary",
+        showcase = icon("triangle-exclamation")
       )
     } else {
-      # Put value into box to plug into app
-      valueBox(
-        # take input number
+      bslib::value_box(
+        title = NULL,
         paste0(round2(subject_va_grade0(), 2)),
-        # add subtitle to explain what it's showing
-        paste0("Value added grade"),
-        color = "purple"
+        "Value added grade",
+        theme = "primary",
+        showcase = icon("chart-line")
       )
     }
   })
@@ -1617,26 +1731,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$ci <- renderValueBox({
+  output$ci <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        "Please upload student data",
+        theme = "secondary",
+        showcase = icon("upload")
       )
     } else if (input$data_source == "National data only") {
-      valueBox(
-        paste0("-"),
-        paste0("Select 'National and student data'"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        "Select 'National and student data'",
+        theme = "secondary",
+        showcase = icon("triangle-exclamation")
       )
     } else {
-      valueBox(
-        # take input number
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(ci_lower0(), 2), ", ", round2(ci_upper0(), 2), "]"),
-        # add subtitle to explain what it's showing
-        paste0("Confidence intervals"),
-        color = "purple"
+        "Confidence intervals",
+        theme = "primary",
+        showcase = icon("scale-balanced")
       )
     }
   })
@@ -1716,27 +1834,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_alev_entries <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_alev_entries <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_alev_entries0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_alev_entries0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "dark-blue"
+    } else if (cohort_alev_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_alev_entries0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -1754,27 +1875,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_acad_entries <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_acad_entries <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_acad_entries0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_acad_entries0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "blue"
+    } else if (cohort_acad_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_acad_entries0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -1792,27 +1916,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_agen_entries <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_agen_entries <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_agen_entries0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_agen_entries0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "dark-blue"
+    } else if (cohort_agen_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_agen_entries0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -1830,27 +1957,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techlev_entries <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techlev_entries <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techlev_entries0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_techlev_entries0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "blue"
+    } else if (cohort_techlev_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_techlev_entries0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -1868,27 +1998,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techcert_entries <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techcert_entries <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techcert_entries0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_techcert_entries0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "dark-blue"
+    } else if (cohort_techcert_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_techcert_entries0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -1910,25 +2043,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_alev_va_grade <- renderValueBox({
+  output$cohort_alev_va_grade <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_alev_entries0() != 0)) {
-      # Put value into box to plug into app
-      valueBox(
+    } else if (cohort_alev_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_alev_va_grade0(), 2)),
-        paste0("Value added grade"),
-        color = "dark-blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -1948,25 +2086,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_acad_va_grade <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_acad_va_grade <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_acad_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_acad_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_acad_va_grade0(), 2)),
-        paste0("Value added grade"),
-        color = "blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -1986,25 +2129,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_agen_va_grade <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_agen_va_grade <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_agen_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_agen_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_agen_va_grade0(), 2)),
-        paste0("Value added grade"),
-        color = "dark-blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2024,25 +2172,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techlev_va_grade <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techlev_va_grade <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techlev_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_techlev_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_techlev_va_grade0(), 2)),
-        paste0("Value added grade"),
-        color = "blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2062,25 +2215,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techcert_va_grade <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techcert_va_grade <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techcert_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_techcert_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_techcert_va_grade0(), 2)),
-        paste0("Value added grade"),
-        color = "dark-blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2112,24 +2270,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_alev_ci <- renderValueBox({
+  output$cohort_alev_ci <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_alev_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_alev_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_alev_ci_lower0(), 2), ", ", round2(cohort_alev_ci_upper0(), 2), "]"),
-        paste0("Confidence intervals"),
-        color = "dark-blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2158,24 +2322,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_acad_ci <- renderValueBox({
+  output$cohort_acad_ci <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_acad_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_acad_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_acad_ci_lower0(), 2), ", ", round2(cohort_acad_ci_upper0(), 2), "]"),
-        paste0("Confidence intervals"),
-        color = "blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2204,24 +2374,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_agen_ci <- renderValueBox({
+  output$cohort_agen_ci <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_agen_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_agen_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_agen_ci_lower0(), 2), ", ", round2(cohort_agen_ci_upper0(), 2), "]"),
-        paste0("Confidence intervals"),
-        color = "dark-blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2250,24 +2426,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techlev_ci <- renderValueBox({
+  output$cohort_techlev_ci <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techlev_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_techlev_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_techlev_ci_lower0(), 2), ", ", round2(cohort_techlev_ci_upper0(), 2), "]"),
-        paste0("Confidence intervals"),
-        color = "blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2296,24 +2478,30 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techcert_ci <- renderValueBox({
+  output$cohort_techcert_ci <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techcert_entries0() != 0)) {
-      valueBox(
+    } else if (cohort_techcert_entries0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_techcert_ci_lower0(), 2), ", ", round2(cohort_techcert_ci_upper0(), 2), "]"),
-        paste0("Confidence intervals"),
-        color = "dark-blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2339,33 +2527,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_alev_entries_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_alev_entries_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     } else if (length(cohort_alev_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_alev_entries_dis0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_alev_entries_dis0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2383,33 +2576,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_acad_entries_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_acad_entries_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     } else if (length(cohort_acad_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_acad_entries_dis0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_acad_entries_dis0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2427,33 +2625,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_agen_entries_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_agen_entries_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     } else if (length(cohort_agen_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_agen_entries_dis0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_agen_entries_dis0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2471,33 +2674,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techlev_entries_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techlev_entries_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     } else if (length(cohort_techlev_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_techlev_entries_dis0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_techlev_entries_dis0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2515,33 +2723,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techcert_entries_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techcert_entries_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     } else if (length(cohort_techcert_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
-        paste0(cohort_techcert_entries_dis0()),
-        # add subtitle to explain what it's showing
-        paste0("Number of students"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = scales::comma(cohort_techcert_entries_dis0()),
+        p("Number of students"),
+        showcase = icon("users"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2563,33 +2776,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_alev_va_grade_dis <- renderValueBox({
+  output$cohort_alev_va_grade_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_alev_entries_dis0() != 0)) {
-      # Put value into box to plug into app
-      valueBox(
-        # take input number
+    } else if (cohort_alev_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_alev_va_grade_dis0(), 2)),
-        # add subtitle to explain what it's showing
-        paste0("Value added grade"),
-        color = "dark-blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2609,33 +2827,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_acad_va_grade_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_acad_va_grade_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_acad_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_acad_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_acad_va_grade_dis0(), 2)),
-        # add subtitle to explain what it's showing
-        paste0("Value added grade"),
-        color = "blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2655,33 +2878,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_agen_va_grade_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_agen_va_grade_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_agen_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_agen_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_agen_va_grade_dis0(), 2)),
-        # add subtitle to explain what it's showing
-        paste0("Value added grade"),
-        color = "dark-blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2701,33 +2929,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techlev_va_grade_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techlev_va_grade_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techlev_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_techlev_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_techlev_va_grade_dis0(), 2)),
-        # add subtitle to explain what it's showing
-        paste0("Value added grade"),
-        color = "blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2747,33 +2980,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techcert_va_grade_dis <- renderValueBox({
-    # Put value into box to plug into app
+  output$cohort_techcert_va_grade_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techcert_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_techcert_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0(round2(cohort_techcert_va_grade_dis0(), 2)),
-        # add subtitle to explain what it's showing
-        paste0("Value added grade"),
-        color = "dark-blue"
+        p("Value added grade"),
+        showcase = icon("chart-line"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2805,32 +3043,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_alev_ci_dis <- renderValueBox({
+  output$cohort_alev_ci_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_alev_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_alev_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_alev_ci_lower_dis0(), 2), ", ", round2(cohort_alev_ci_upper_dis0(), 2), "]"),
-        # add subtitle to explain what it's showing
-        paste0("Confidence intervals"),
-        color = "dark-blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2859,32 +3103,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_acad_ci_dis <- renderValueBox({
+  output$cohort_acad_ci_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_acad_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_acad_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_acad_ci_lower_dis0(), 2), ", ", round2(cohort_acad_ci_upper_dis0(), 2), "]"),
-        # add subtitle to explain what it's showing
-        paste0("Confidence intervals"),
-        color = "blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2913,32 +3163,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_agen_ci_dis <- renderValueBox({
+  output$cohort_agen_ci_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_agen_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_agen_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_agen_ci_lower_dis0(), 2), ", ", round2(cohort_agen_ci_upper_dis0(), 2), "]"),
-        # add subtitle to explain what it's showing
-        paste0("Confidence intervals"),
-        color = "dark-blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -2967,32 +3223,38 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techlev_ci_dis <- renderValueBox({
+  output$cohort_techlev_ci_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techlev_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_techlev_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_techlev_ci_lower_dis0(), 2), ", ", round2(cohort_techlev_ci_upper_dis0(), 2), "]"),
-        # add subtitle to explain what it's showing
-        paste0("Confidence intervals"),
-        color = "blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
@@ -3021,35 +3283,88 @@ server <- function(input, output, session) {
     return(n)
   })
 
-  output$cohort_techcert_ci_dis <- renderValueBox({
+  output$cohort_techcert_ci_dis <- renderUI({
     if (is.null(input$upload)) {
-      valueBox(
-        paste0("-"),
-        paste0("Please upload student data"),
-        color = "purple"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("Please upload student data"),
+        showcase = icon("upload"),
+        theme = "secondary"
       )
     } else if (count_user_disadvantaged() == 0) {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
-    } else if (length(cohort_techcert_entries_dis0() != 0)) {
-      valueBox(
-        # take input number
+    } else if (cohort_techcert_entries_dis0() != 0) {
+      bslib::value_box(
+        title = NULL,
         paste0("[", round2(cohort_techcert_ci_lower_dis0(), 2), ", ", round2(cohort_techcert_ci_upper_dis0(), 2), "]"),
-        # add subtitle to explain what it's showing
-        paste0("Confidence intervals"),
-        color = "dark-blue"
+        p("Confidence intervals"),
+        showcase = icon("scale-balanced"),
+        theme = "primary"
       )
     } else {
-      valueBox(
-        paste0("-"),
-        paste0("No entries"),
-        color = "dark-blue"
+      bslib::value_box(
+        title = NULL,
+        value = "-",
+        p("No entries"),
+        showcase = icon("triangle-exclamation"),
+        theme = "secondary"
       )
     }
   })
+
+  # Wrap a plot with a larger spinner
+  with_gov_spinner <- function(
+    ui_element,
+    spinner_type = 6,
+    size = 1,
+    color = "#1d70b8"
+  ) {
+    shinycssloaders::withSpinner(
+      ui_element,
+      type = spinner_type,
+      color = color,
+      size = size,
+      proxy.height = paste0(250 * size, "px")
+    )
+  }
+
+  # navigation link within text --------------------------------------------
+  observeEvent(input$nav_link, {
+    shiny::updateTabsetPanel(session, "navlistPanel", selected = input$nav_link)
+  })
+
+  # Dynamic label showing custom selections -----------------------------------
+  output$dropdown_label <- renderText({
+    paste0("Current selections: ", input$selectPhase, ", ", input$selectArea)
+  })
+
+  ## Footer links -------------------------------------------------------------
+  observeEvent(input$dashboard, nav_select("pages", "dashboard"))
+  observeEvent(input$support, nav_select("pages", "support"))
+  observeEvent(
+    input$accessibility_statement,
+    nav_select("pages", "accessibility_statement")
+  )
+  observeEvent(
+    input$cookies_statement,
+    nav_select("pages", "cookies_statement")
+  )
+
+  ## Back links to main dashboard ---------------------------------------------
+  observeEvent(input$footnotes_to_dashboard, nav_select("pages", "dashboard"))
+  observeEvent(input$support_to_dashboard, nav_select("pages", "dashboard"))
+  observeEvent(input$cookies_to_dashboard, nav_select("pages", "dashboard"))
+  observeEvent(
+    input$accessibility_to_dashboard,
+    nav_select("pages", "dashboard")
+  )
 
 
   # Stop app -------------------------------------------------------------------

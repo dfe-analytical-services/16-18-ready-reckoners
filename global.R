@@ -12,33 +12,62 @@
 
 # Library calls ----------------------------------------------------------------
 shhh <- suppressPackageStartupMessages # It's a library, so shhh!
+
+# Core shiny and R packages
 shhh(library(shiny))
-shhh(library(shinyjs))
-shhh(library(tools))
-shhh(library(testthat))
-shhh(library(stringr))
-shhh(library(shinydashboard))
-shhh(library(shinyWidgets))
+shhh(library(bslib))
+shhh(library(rstudioapi))
+
+# Custom packages
+shhh(library(dfeR))
+shhh(library(dfeshiny))
 shhh(library(shinyGovstyle))
-shhh(library(shinytitle))
-shhh(library(dplyr))
+
+# Creating charts and tables
 shhh(library(ggplot2))
 shhh(library(DT))
+shhh(library(sf))
+shhh(library(leaflet))
+shhh(library(htmltools))
+shhh(library(reactable))
+shhh(library(svglite))
+shhh(library(afcharts))
+shhh(library(ggrepel))
+shhh(library(showtext))
+shhh(library(openxlsx))
+shhh(library(shinycssloaders))
+
+# Data and string manipulation
+shhh(library(dplyr))
+shhh(library(stringr))
+shhh(library(ggiraph))
+shhh(library(purrr))
+shhh(library(readr))
+
+# Shiny extensions
+shhh(library(shinyjs))
+shhh(library(tools))
+shhh(library(shinytitle))
 shhh(library(xfun))
 shhh(library(metathis))
+
+# Dependencies needed for testing or CI but not for the app -------------------
+# Including them here keeps them in renv but avoids the app needlessly loading
+# them, saving on load time.
+if (FALSE) {
+  shhh(library(shinytest2))
+  shhh(library(chromote))
+  shhh(library(testthat))
+  shhh(library(devtools))
+  shhh(library(shinya11y))
+}
+
+shhh(library(shinydashboard))
+shhh(library(shinyWidgets))
 shhh(library(shinyalert))
-shhh(library(shinytest2))
-shhh(library(rstudioapi))
-shhh(library(bslib))
-shhh(library(dfeshiny))
-shhh(library(ggiraph))
 shhh(library(readxl))
-# shhh(library(openxlsx))
 shhh(library(snakecase))
 shhh(library(tidyr))
-shhh(library(shinycssloaders))
-# shhh(library(shinya11y))
-shhh(library(reactable))
 
 # Functions --------------------------------------------------------------------
 
@@ -144,16 +173,27 @@ full_data$qualid_lookup <- full_data$qualid_lookup %>%
 # ---- other ----
 # -----------------------------------------------------------------------------------------------------------------------------
 
-expandable <- function(inputId, label, contents) {
-  govDetails <- shiny::tags$details(
-    class = "govuk-details", id = inputId,
-    shiny::tags$summary(
-      class = "govuk-details__summary",
-      shiny::tags$span(
-        class = "govuk-details__summary-text",
-        label
-      )
-    ),
-    shiny::tags$div(contents)
-  )
-}
+# expandable <- function(inputId, label, contents) {
+#   govDetails <- shiny::tags$details(
+#     class = "govuk-details", id = inputId,
+#     shiny::tags$summary(
+#       class = "govuk-details__summary",
+#       shiny::tags$span(
+#         class = "govuk-details__summary-text",
+#         label
+#       )
+#     ),
+#     shiny::tags$div(contents)
+#   )
+# }
+
+# Fonts for charts ------------------------------------------------------------
+font_add("dejavu", "www/fonts/DejaVuSans.ttf")
+register_font(
+  "dejavu",
+  plain = "www/fonts/DejaVuSans.ttf",
+  bold = "www/fonts/DejaVuSans-Bold.ttf",
+  italic = "www/fonts/DejaVuSans-Oblique.ttf",
+  bolditalic = "www/fonts/DejaVuSans-BoldOblique.ttf"
+)
+showtext_auto()

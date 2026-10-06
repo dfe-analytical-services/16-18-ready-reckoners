@@ -1776,18 +1776,52 @@ server <- function(input, output, session) {
         subject_name == input$dropdown_subjects,
         size == input$dropdown_sizes
       ) %>%
-      select(grade, points)
+      select(grade_structure, grade, points)
   })
 
-  output$grade_point_table <- renderReactable({
-    reactable(
-      grade_point_relation()[-1] %>%
-        rename("Outcome attainment points" = points) %>%
-        t() %>%
-        as.data.frame() %>%
-        setNames(grade_point_relation()[, 1])
+  output$grade_point_table <- renderUI({
+    tables <- split(
+      grade_point_relation(),
+      grade_point_relation()$grade_structure
+    )
+    tagList(
+      lapply(seq_along(tables), function(i) {
+        reactableOutput(paste0("grade_point_table_", i))
+      })
     )
   })
+  observe({
+    tables <- split(
+      grade_point_relation(),
+      grade_point_relation()$grade_structure
+    )
+    for (i in seq_along(tables)) {
+      local({
+        ii <- i
+        tbl <- tables[[ii]]
+        output[[paste0("grade_point_table_", ii)]] <- renderReactable({
+          reactable(
+            tbl %>%
+              select(points) %>%
+              rename("Outcome attainment points" = points) %>%
+              t() %>%
+              as.data.frame() %>%
+              setNames(tbl$grade)
+          )
+        })
+      })
+    }
+  })
+
+  # output$grade_point_table <- renderReactable({
+  #   reactable(
+  #     grade_point_relation()[-1] %>%
+  #       rename("Outcome attainment points" = points) %>%
+  #       t() %>%
+  #       as.data.frame() %>%
+  #       setNames(grade_point_relation()[, 1])
+  #   )
+  # })
 
 
   # output$grade_point_table <- renderDataTable({

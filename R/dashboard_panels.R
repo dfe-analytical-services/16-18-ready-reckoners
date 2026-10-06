@@ -16,7 +16,7 @@ homepage_panel <- function() {
         column(
           12,
           heading_text(
-            "16-18 Ready Reckoner: 2025 final data",
+            "16-19 Ready Reckoner: 2025 final data",
             size = "l",
             level = 1
           )
@@ -33,10 +33,10 @@ homepage_panel <- function() {
             bslib::card_body(
               heading_text("Introduction", size = "s", level = 3),
               gov_text(
-                "Welcome to the 16-18 ready reckoner app."
+                "Welcome to the 16-19 ready reckoner app."
               ),
               gov_text(
-                "The 16-18 ready reckoner is a tool that can be used to both
+                "The 16-19 ready reckoner is a tool that can be used to both
                 understand the value added model better, and to manipulate
                 student data and inform target setting."
               ),
@@ -55,12 +55,12 @@ homepage_panel <- function() {
               ),
               heading_text("Value added", size = "s", level = 3),
               gov_text(
-                "16 to 18 value added measures show how well students did in their qualifications
+                "16 to 19 value added measures show how well students did in their qualifications
                 compared to other students with similar prior attainment nationally."
               ),
               gov_text(
                 "Information on how we calculated value added measures can be found in the ",
-                a("16-18 technical guide",
+                a("16-19 technical guide",
                   href = "https://www.gov.uk/government/publications/16-to-19-accountability-headline-measures-technical-guide"
                 )
               ),
@@ -70,19 +70,19 @@ homepage_panel <- function() {
                 width = 1 / 3,
                 downloadButton(
                   outputId = "model_data_download",
-                  label = "Model data (csv, 500KB)",
+                  label = "Model data (csv, 400KB)",
                   icon = shiny::icon("download"),
                   class = "btn-primary"
                 ),
                 downloadButton(
                   outputId = "subject_variance_download",
-                  label = "Subject variance (csv, 50KB)",
+                  label = "Subject variance (csv, 40KB)",
                   icon = shiny::icon("download"),
                   class = "btn-primary"
                 ),
                 downloadButton(
                   outputId = "disadvantaged_subject_variance_download",
-                  label = "Disadvantaged subject variance (csv, 50KB)",
+                  label = "Disadvantaged subject variance (csv, 40KB)",
                   icon = shiny::icon("download"),
                   class = "btn-primary"
                 )
@@ -285,7 +285,7 @@ data_upload_panel <- function() {
                       width = 4,
                       downloadButton(
                         outputId = "qan_lookup_download",
-                        label = "Qualification number lookup table (csv, 150KB)",
+                        label = "Qualification number lookup table (csv, 160KB)",
                         icon = shiny::icon("download"),
                         class = "btn-primary"
                       )
@@ -296,7 +296,7 @@ data_upload_panel <- function() {
                       width = 4,
                       downloadButton(
                         outputId = "points_lookup_download",
-                        label = "Points lookup table (csv, 300KB)",
+                        label = "Points lookup table (csv, 400KB)",
                         icon = shiny::icon("download"),
                         class = "btn-primary"
                       )
@@ -622,7 +622,7 @@ subject_va_panel <- function() {
         bslib::card(
           bslib::card_header(
             heading_text(
-              "KS4 prior attainment (points) compared with 16-18 attainment outcomes (points).",
+              "KS4 prior attainment (points) compared with 16-19 attainment outcomes (points).",
               size = "m",
               level = 2
             )
@@ -665,7 +665,8 @@ subject_va_panel <- function() {
             )
           ),
           bslib::card_body(
-            reactableOutput("grade_point_table")
+            uiOutput("grade_point_table")
+            # reactableOutput("grade_point_table")
             # DTOutput("grade_point_table"),
           )
         )

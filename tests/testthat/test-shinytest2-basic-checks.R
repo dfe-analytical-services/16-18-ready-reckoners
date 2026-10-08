@@ -3,8 +3,8 @@ library(diffviewer)
 
 app <- AppDriver$new(name = "basic_load", height = 846, width = 1445, load_timeout = 45 * 1000, timeout = 20 * 1000, wait = TRUE)
 
-# Wait until Shiny is not busy for 500ms
-app$wait_for_idle(500)
+# Wait until Shiny is not busy
+app$wait_for_idle()
 
 # Screenshots are left on for this script to help with troubleshooting
 # They will not cause any failures if there's changes
@@ -35,6 +35,7 @@ test_that("App loads", {
 })
 
 app$set_inputs(navlistPanel = "data_upload_dashboard")
+app$wait_for_idle()
 test_that("Data upload panel opens", {
   # Capture initial values
   app$expect_values(
@@ -44,6 +45,7 @@ test_that("Data upload panel opens", {
 })
 
 app$set_inputs(navlistPanel = "data_check_dashboard")
+app$wait_for_idle()
 test_that("Data check panel opens", {
   # Capture initial values
   app$expect_values(
@@ -53,6 +55,7 @@ test_that("Data check panel opens", {
 })
 
 app$set_inputs(navlistPanel = "va_student_dashboard")
+app$wait_for_idle()
 test_that("VA student panel opens", {
   # Capture initial values
   app$expect_values()
@@ -66,6 +69,7 @@ va_subject_outputs <- c(
 )
 
 app$set_inputs(navlistPanel = "va_subject_dashboard")
+app$wait_for_idle()
 test_that("VA subject panel opens", {
   # Capture initial values
   app$expect_values(
@@ -89,6 +93,7 @@ va_cohort_outputs <- c(
 )
 
 app$set_inputs(navlistPanel = "va_cohort_dashboard")
+app$wait_for_idle()
 test_that("VA cohort panel opens", {
   # Capture initial values
   app$expect_values(

@@ -128,9 +128,9 @@ sites_list <- c(site_primary)
 
 # Update this with your parent
 # publication name (e.g. the EES publication)
-ees_pub_name <- "A level and other 16 to 18 results"
+ees_pub_name <- "16 to 19 performance"
 # Update with parent publication link
-ees_publication <- "https://explore-education-statistics.service.gov.uk/find-statistics/a-level-and-other-16-to-18-results"
+ees_publication <- "https://explore-education-statistics.service.gov.uk/find-statistics/16-to-19-performance"
 google_analytics_key <- "72QXVY0V75"
 
 
@@ -142,18 +142,20 @@ source("R/read_data.R")
 # -----------------------------------------------------------------------------------------------------------------------------
 
 ## expand this list at the begining of each cycle
+data_2026U <- func_read_multiplesheets("data/2026U_l3va_step5_outputs_Rversion.xlsx", 2026)
 data_2025F <- func_read_multiplesheets("data/2025F_l3va_step5_outputs_Rversion.xlsx", 2025)
 data_2024F <- func_read_multiplesheets("data/2024F_l3va_step5_outputs_Rversion_redacted.xlsx", 2024)
 
 
 # get the sheet names - would need to update this each year with latest year data
 # relies on sheet names not changing between runs
-sheet_names <- names(data_2025F)
+sheet_names <- names(data_2026U)
 
 # combine corresponding sheets
 # would also need to expand each year
 full_data <- lapply(sheet_names, function(sheet) {
   bind_rows(
+    data_2026U[[sheet]],
     data_2025F[[sheet]],
     data_2024F[[sheet]]
   )

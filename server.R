@@ -1877,7 +1877,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_alev_entries0() != 0) {
+    } else if (length(cohort_alev_entries0()) > 0 && cohort_alev_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_alev_entries0()),
@@ -1918,7 +1918,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_acad_entries0() != 0) {
+    } else if (length(cohort_acad_entries0()) > 0 && cohort_acad_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_acad_entries0()),
@@ -1959,7 +1959,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_agen_entries0() != 0) {
+    } else if (length(cohort_agen_entries0()) > 0 && cohort_agen_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_agen_entries0()),
@@ -2000,7 +2000,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_techlev_entries0() != 0) {
+    } else if (length(cohort_techlev_entries0()) > 0 && cohort_techlev_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_techlev_entries0()),
@@ -2041,7 +2041,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_techcert_entries0() != 0) {
+    } else if (length(cohort_techcert_entries0()) > 0 && cohort_techcert_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_techcert_entries0()),
@@ -2086,7 +2086,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_alev_entries0() != 0) {
+    } else if (length(cohort_alev_entries0()) > 0 && cohort_alev_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_alev_va_grade0(), 2)),
@@ -2129,7 +2129,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_acad_entries0() != 0) {
+    } else if (length(cohort_acad_entries0()) > 0 && cohort_acad_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_acad_va_grade0(), 2)),
@@ -2172,7 +2172,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_agen_entries0() != 0) {
+    } else if (length(cohort_agen_entries0()) > 0 && cohort_agen_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_agen_va_grade0(), 2)),
@@ -2215,7 +2215,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_techlev_entries0() != 0) {
+    } else if (length(cohort_techlev_entries0()) > 0 && cohort_techlev_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_techlev_va_grade0(), 2)),
@@ -2258,7 +2258,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_techcert_entries0() != 0) {
+    } else if (length(cohort_techcert_entries0()) > 0 && cohort_techcert_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_techcert_va_grade0(), 2)),
@@ -2313,7 +2313,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_alev_entries0() != 0) {
+    } else if (length(cohort_alev_entries0()) > 0 && cohort_alev_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_alev_ci_lower0(), 2), ", ", round2(cohort_alev_ci_upper0(), 2), "]"),
@@ -2365,7 +2365,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_acad_entries0() != 0) {
+    } else if (length(cohort_acad_entries0()) > 0 && cohort_acad_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_acad_ci_lower0(), 2), ", ", round2(cohort_acad_ci_upper0(), 2), "]"),
@@ -2417,7 +2417,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_agen_entries0() != 0) {
+    } else if (length(cohort_agen_entries0()) > 0 && cohort_agen_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_agen_ci_lower0(), 2), ", ", round2(cohort_agen_ci_upper0(), 2), "]"),
@@ -2469,7 +2469,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_techlev_entries0() != 0) {
+    } else if (length(cohort_techlev_entries0()) > 0 && cohort_techlev_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_techlev_ci_lower0(), 2), ", ", round2(cohort_techlev_ci_upper0(), 2), "]"),
@@ -2521,7 +2521,7 @@ server <- function(input, output, session) {
         showcase = icon("upload"),
         theme = "secondary"
       )
-    } else if (cohort_techcert_entries0() != 0) {
+    } else if (length(cohort_techcert_entries0()) > 0 && cohort_techcert_entries0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_techcert_ci_lower0(), 2), ", ", round2(cohort_techcert_ci_upper0(), 2), "]"),
@@ -2556,7 +2556,7 @@ server <- function(input, output, session) {
       select(cohort_student_count) %>%
       pull()
 
-    print(n)
+    # print(n)
 
     return(n)
   })
@@ -2578,7 +2578,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (length(cohort_alev_entries_dis0() != 0)) {
+    } else if (length(cohort_alev_va_grade_dis0()) > 0 && cohort_alev_va_grade_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_alev_entries_dis0()),
@@ -2627,7 +2627,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (length(cohort_acad_entries_dis0() != 0)) {
+    } else if (length(cohort_acad_entries_dis0() != 0) && cohort_acad_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_acad_entries_dis0()),
@@ -2676,7 +2676,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (length(cohort_agen_entries_dis0() != 0)) {
+    } else if (length(cohort_agen_entries_dis0() != 0) && cohort_agen_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_agen_entries_dis0()),
@@ -2725,7 +2725,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (length(cohort_techlev_entries_dis0() != 0)) {
+    } else if (length(cohort_techlev_entries_dis0() != 0) && cohort_techlev_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_techlev_entries_dis0()),
@@ -2774,7 +2774,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (length(cohort_techcert_entries_dis0() != 0)) {
+    } else if (length(cohort_techcert_entries_dis0() != 0) && cohort_techcert_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         value = scales::comma(cohort_techcert_entries_dis0()),
@@ -2827,7 +2827,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_alev_entries_dis0() != 0) {
+    } else if (length(cohort_alev_entries_dis0()) > 0 && cohort_alev_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_alev_va_grade_dis0(), 2)),
@@ -2878,7 +2878,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_acad_entries_dis0() != 0) {
+    } else if (length(cohort_acad_entries_dis0()) > 0 && cohort_acad_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_acad_va_grade_dis0(), 2)),
@@ -2929,7 +2929,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_agen_entries_dis0() != 0) {
+    } else if (length(cohort_agen_va_grade_dis0()) > 0 && cohort_agen_va_grade_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_agen_va_grade_dis0(), 2)),
@@ -2980,7 +2980,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_techlev_entries_dis0() != 0) {
+    } else if (length(cohort_techlev_entries_dis0()) > 0 && cohort_techlev_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_techlev_va_grade_dis0(), 2)),
@@ -3031,7 +3031,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_techcert_entries_dis0() != 0) {
+    } else if (length(cohort_techcert_entries_dis0()) > 0 && cohort_techcert_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0(round2(cohort_techcert_va_grade_dis0(), 2)),
@@ -3094,7 +3094,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_alev_entries_dis0() != 0) {
+    } else if (length(cohort_alev_entries_dis0()) > 0 && cohort_alev_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_alev_ci_lower_dis0(), 2), ", ", round2(cohort_alev_ci_upper_dis0(), 2), "]"),
@@ -3154,7 +3154,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_acad_entries_dis0() != 0) {
+    } else if (length(cohort_acad_entries_dis0()) > 0 && cohort_acad_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_acad_ci_lower_dis0(), 2), ", ", round2(cohort_acad_ci_upper_dis0(), 2), "]"),
@@ -3214,7 +3214,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_agen_entries_dis0() != 0) {
+    } else if (length(cohort_agen_entries_dis0()) > 0 && cohort_agen_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_agen_ci_lower_dis0(), 2), ", ", round2(cohort_agen_ci_upper_dis0(), 2), "]"),
@@ -3274,7 +3274,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_techlev_entries_dis0() != 0) {
+    } else if (length(cohort_techlev_entries_dis0()) > 0 && cohort_techlev_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_techlev_ci_lower_dis0(), 2), ", ", round2(cohort_techlev_ci_upper_dis0(), 2), "]"),
@@ -3334,7 +3334,7 @@ server <- function(input, output, session) {
         showcase = icon("triangle-exclamation"),
         theme = "secondary"
       )
-    } else if (cohort_techcert_entries_dis0() != 0) {
+    } else if (length(cohort_techcert_entries_dis0()) > 0 && cohort_techcert_entries_dis0() != 0) {
       bslib::value_box(
         title = NULL,
         paste0("[", round2(cohort_techcert_ci_lower_dis0(), 2), ", ", round2(cohort_techcert_ci_upper_dis0(), 2), "]"),

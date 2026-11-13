@@ -16,7 +16,7 @@ homepage_panel <- function() {
         column(
           12,
           heading_text(
-            "16-19 Ready Reckoner: 2025 final data",
+            "16-19 Ready Reckoner: 2026 provisional data",
             size = "l",
             level = 1
           )
@@ -50,8 +50,8 @@ homepage_panel <- function() {
                 actionLink("link_to_user_upload_tab", "User data upload panel")
               ),
               gov_text(
-                "A level and other 16 to 18 results data are now all available on the statistics platform, ",
-                actionLink("ees_publication", "Explore Education Statistics (EES)")
+                "16 to 19 performance data are now all available on the statistics platform, ",
+                external_link(ees_publication, "Explore Education Statistics (EES)")
               ),
               heading_text("Value added", size = "s", level = 3),
               gov_text(
@@ -60,9 +60,7 @@ homepage_panel <- function() {
               ),
               gov_text(
                 "Information on how we calculated value added measures can be found in the ",
-                a("16-19 technical guide",
-                  href = "https://www.gov.uk/government/publications/16-to-19-accountability-headline-measures-technical-guide"
-                )
+                external_link("https://www.gov.uk/government/publications/16-to-19-accountability-headline-measures-technical-guide", "16-19 technical guide")
               ),
               gov_text("The underlying data used by this app to calculate each student's value added result and the confidence intervals can be downloaded here as .csv files.
             These files include the national model data, the subject variance data, and the subject variance data for the disadvantaged cohort."),
@@ -105,10 +103,8 @@ homepage_panel <- function() {
               gov_text("The data upload tab is the area for you to upload a .csv file holding your students data."),
               gov_text(
                 "Your student data can be taken directly from the pupil level file available on the ",
-                a("checking website,",
-                  href = "https://onlinecollections.des.fasst.org.uk/fastform/school-checking-exercise-16to18"
-                ),
-                "which can be saved as a csv file and uploaded within this app."
+                external_link("https://onlinecollections.des.fasst.org.uk/fastform/school-checking-exercise-16to18", "checking website"),
+                ", which can be saved as a csv file and uploaded within this app."
               ),
               gov_text("Alternatively, there are a number of downloads available to assist with the data upload, also found in this panel under the 'Templates and lookups' tab."),
               tags$ol(

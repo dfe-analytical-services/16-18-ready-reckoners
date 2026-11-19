@@ -23,6 +23,8 @@ shhh(library(dfeR))
 shhh(library(dfeshiny))
 shhh(library(shinyGovstyle))
 
+shhh(library(rsconnect))
+
 # Creating charts and tables
 shhh(library(ggplot2))
 shhh(library(DT))

@@ -10,7 +10,7 @@ on:
   
 jobs:
   deploy:
-    uses: dfe-analytical-services/dfeshiny/.github/workflows/dashboard_deploy_template.yaml@main
+    uses: dfe-analytical-services/dfeshiny/.github/workflows/dashboard_deploy_template.yaml@patch-remove-explicit-R-deploy-version
     with:
       parameter_file: deploy-parameters.yaml
     secrets:

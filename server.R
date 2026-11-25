@@ -3400,10 +3400,4 @@ server <- function(input, output, session) {
     nav_select("pages", "dashboard")
   )
 
-
-  # Stop app -------------------------------------------------------------------
-
-  session$onSessionEnded(function() {
-    stopApp()
-  })
 }
